@@ -127,10 +127,10 @@
                             ];
                             const fullAddress = addressParts.filter(part => part && part.toUpperCase() !== 'NO ESPECIFICADO' && part.toUpperCase() !== 'SIN DATO' && part.trim() !== '').join(' ');
                             const addressHTML = fullAddress ? `<strong>Domicilio:</strong> ${fullAddress}<br>` : '';
-                            const streetViewUrl = `https://www.google.com/maps?layer=c&cbll=${item.LATITUD},${item.LONGITUDE}&cbp=12,0,0,0,0`;
+                            const streetViewEmbedUrl = `https://www.google.com/maps?layer=c&cbll=${item.LATITUD},${item.LONGITUD}&cbp=12,0,0,0,0&output=svembed`;
 
                             marker.bindPopup(`
-                                <div class="text-sm">
+                                <div class="text-sm" style="width: 260px;">
                                     <strong class="text-base text-green-700">${item['NOMBRE DE LA UNIDAD']}</strong><br>
                                     <strong>CLUES:</strong> ${item['CLUES']}<br>
                                     <strong>Institución:</strong> ${item['NOMBRE DE LA INSTITUCION']}<br>
@@ -139,9 +139,12 @@
                                     ${addressHTML}
                                     ${(item['TELEFONO'] && item['TELEFONO'].toUpperCase() !== 'NO ESPECIFICADO') ? `<strong>Teléfono:</strong> ${item['TELEFONO']}<br>` : ''}
                                     ${(item['CORREO ELECTRONICO'] && item['CORREO ELECTRONICO'].toUpperCase() !== 'NO ESPECIFICADO') ? `<strong>Correo:</strong> ${item['CORREO ELECTRONICO']}<br>` : ''}
-                                    <a href="${streetViewUrl}" target="_blank" rel="noopener noreferrer" class="mt-2 inline-block bg-green-600 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-green-700 transition-colors no-underline">
-                                        Ver Street View
-                                    </a>
+                                    <iframe
+                                        class="mt-2 w-full h-40 rounded border-0"
+                                        loading="lazy"
+                                        allowfullscreen
+                                        src="${streetViewEmbedUrl}">
+                                    </iframe>
                                 </div>
                             `);
                             markerCluster.addLayer(marker);
@@ -403,7 +406,8 @@
                         <div className="text-center">
                             <svg className="animate-spin h-10 w-10 text-green-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8
+ 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                             <p className="mt-2 text-lg font-semibold text-gray-700">Cargando datos...</p>
                         </div>
