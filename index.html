@@ -119,11 +119,12 @@
                             
                             // Construct address string safely
                             const addressParts = [
-                                item['TIPO VIALIDAD'],
+                                item['TIPO DE VIALIDAD'],
                                 item['VIALIDAD'],
-                                item['NÚMERO EXTERIOR'],
+                                item['NUMERO EXTERIOR'],
+                                item['TIPO DE ASENTAMIENTO']
                                 item['ASENTAMIENTO'],
-                                item['CÓDIGO POSTAL'] ? `C.P. ${item['CÓDIGO POSTAL']}` : null
+                                item['CODIGO POSTAL'] ? `C.P. ${item['CODIGO POSTAL']}` : null
                             ];
                             const fullAddress = addressParts.filter(part => part && part.toUpperCase() !== 'NO ESPECIFICADO' && part.toUpperCase() !== 'SIN DATO' && part.trim() !== '').join(' ');
                             const addressHTML = fullAddress ? `<strong>Domicilio:</strong> ${fullAddress}<br>` : '';
