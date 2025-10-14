@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo CLUES Septiembre</title>
+    <title>Catálogo CLUES</title>
     
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -384,7 +384,7 @@
                     {/* Header */}
                     <header className="bg-white shadow-md sticky top-0 z-10">
                         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                            <h1 className="text-2xl font-bold text-green-800">Catálogo de Establecimientos CLUES</h1>
+                            <h1 className="text-2xl font-bold text-green-800">Catálogo CLUES</h1>
                         </div>
                     </header>
 
@@ -392,40 +392,53 @@
                     <main className="container mx-auto p-4 lg:p-6">
                         {/* Filters */}
                         <div className="bg-white p-4 rounded-lg shadow-md mb-6">
-                            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 items-center">
-                                <div className="relative md:col-span-2 lg:col-span-1" ref={searchContainerRef}>
-                                    <input
-                                        type="text"
-                                        name="search"
-                                        placeholder="Buscar por CLUES o Nombre..."
-                                        value={filters.search}
-                                        onChange={handleSearchChange}
-                                        autoComplete="off"
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none"
-                                    />
-                                    {suggestions.length > 0 && (
-                                        <ul className="absolute z-20 w-full bg-white border border-gray-200 rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg">
-                                            {suggestions.map((suggestion, index) => (
-                                                <li
-                                                    key={index}
-                                                    className="p-2 text-sm text-gray-700 hover:bg-green-100 cursor-pointer"
-                                                    onClick={() => handleSuggestionClick(suggestion)}
-                                                >
-                                                    {suggestion}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-end">
+                                <div className="relative sm:col-span-2 md:col-span-1">
+                                    <label htmlFor="search-input" className="block text-sm font-medium text-gray-700 mb-1">Búsqueda</label>
+                                    <div ref={searchContainerRef}>
+                                        <input
+                                            id="search-input"
+                                            type="text"
+                                            name="search"
+                                            placeholder="Buscar por CLUES o Nombre..."
+                                            value={filters.search}
+                                            onChange={handleSearchChange}
+                                            autoComplete="off"
+                                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none"
+                                        />
+                                        {suggestions.length > 0 && (
+                                            <ul className="absolute z-20 w-full bg-white border border-gray-200 rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg">
+                                                {suggestions.map((suggestion, index) => (
+                                                    <li
+                                                        key={index}
+                                                        className="p-2 text-sm text-gray-700 hover:bg-green-100 cursor-pointer"
+                                                        onClick={() => handleSuggestionClick(suggestion)}
+                                                    >
+                                                        {suggestion}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
                                 </div>
-                                <select name="institution" value={filters.institution} onChange={handleFilterChange} className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none">
-                                    {uniqueInstitutions.map(inst => <option key={inst} value={inst}>{inst}</option>)}
-                                </select>
-                                <select name="municipality" value={filters.municipality} onChange={handleFilterChange} className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none">
-                                    {uniqueMunicipalities.map(mun => <option key={mun} value={mun}>{mun}</option>)}
-                                </select>
-                                <select name="establishmentType" value={filters.establishmentType} onChange={handleFilterChange} className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none">
-                                    {uniqueEstablishmentTypes.map(type => <option key={type} value={type}>{type}</option>)}
-                                </select>
+                                <div>
+                                    <label htmlFor="institution-select" className="block text-sm font-medium text-gray-700 mb-1">Institución</label>
+                                    <select id="institution-select" name="institution" value={filters.institution} onChange={handleFilterChange} className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none">
+                                        {uniqueInstitutions.map(inst => <option key={inst} value={inst}>{inst}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label htmlFor="municipality-select" className="block text-sm font-medium text-gray-700 mb-1">Municipio</label>
+                                    <select id="municipality-select" name="municipality" value={filters.municipality} onChange={handleFilterChange} className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none">
+                                        {uniqueMunicipalities.map(mun => <option key={mun} value={mun}>{mun}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label htmlFor="establishment-select" className="block text-sm font-medium text-gray-700 mb-1">Tipo de Unidad</label>
+                                    <select id="establishment-select" name="establishmentType" value={filters.establishmentType} onChange={handleFilterChange} className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none">
+                                        {uniqueEstablishmentTypes.map(type => <option key={type} value={type}>{type}</option>)}
+                                    </select>
+                                </div>
                                 <button
                                     onClick={handleResetFilters}
                                     className="w-full p-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 font-semibold"
@@ -479,4 +492,6 @@
 
 </body>
 </html>
+
+
 
