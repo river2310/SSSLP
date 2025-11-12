@@ -55,13 +55,28 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
-        .leaflet-popup-content-wrapper {
-            border-radius: 0.5rem;
+        /* Estilos para el Modal */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        .leaflet-popup-content {
-            margin: 13px 19px;
-            line-height: 1.4;
-            min-width: 220px;
+        .modal-content {
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            z-index: 50;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            width: 600px; /* Ancho fijo para el modal */
         }
     </style>
 </head>
@@ -70,11 +85,14 @@
 
     <script type="text/babel">
         // Constants and Helper Functions
+        // URL principal (exclusivo SLP)
         const DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQjbzFt4pmSA-WFGGjY527FzN81qjhgWKC7KVfKllt-qHjYt6rtOHRoseOhxa0qkcIvsRT6noCc9YIJ/pub?gid=0&single=true&output=csv';
+        // URL de recursos (consultorios, médicos, etc.)
+        const RESOURCES_DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSxlP3IcVl4224XrW67L8AbTP3zlH5WzK4sC4PRMNQmOMtiP7ZEzNZ7me7XtBL66dKDBwSYPtqwS4fH/pub?gid=0&single=true&output=csv';
 
         // --- React Components ---
 
-        // A reusable card component for statistics
+        // Componente de tarjeta de estadística
         const StatCard = ({ title, value, icon }) => (
             <div className="bg-white p-4 rounded-lg shadow-md flex items-center">
                 <div className="bg-green-100 text-green-700 p-3 rounded-full mr-4">
@@ -87,28 +105,31 @@
             </div>
         );
 
-        // Map Component using Leaflet.js
-        const MapView = ({ data }) => {
+        // Componente de Mapa (Leaflet)
+        const MapView = ({ data, resources, onMarkerClick }) => {
             const mapRef = React.useRef(null);
             const markerLayerRef = React.useRef(null);
 
+            // Efecto para inicializar el mapa
             React.useEffect(() => {
                 if (!mapRef.current) {
-                    mapRef.current = L.map('map').setView([23.6345, -102.5528], 5); // Centered on Mexico
+                    mapRef.current = L.map('map').setView([23.6345, -102.5528], 5); // Centrado en Mexico (se ajustará)
                     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
                     }).addTo(mapRef.current);
                 }
             }, []);
 
+            // Efecto para actualizar los marcadores
             React.useEffect(() => {
-                // Clear existing markers
+                // Limpiar marcadores existentes
                 if (markerLayerRef.current) {
                     mapRef.current.removeLayer(markerLayerRef.current);
                     markerLayerRef.current = null;
                 }
 
-                if (data) {
+                // Asegurarse que los datos y recursos estén cargados
+                if (data && resources) {
                     const validData = data.filter(d => d.LATITUD && d.LONGITUD && !isNaN(d.LATITUD) && !isNaN(d.LONGITUD));
 
                     if (validData.length > 0) {
@@ -117,57 +138,40 @@
                         validData.forEach(item => {
                             const marker = L.marker([item.LATITUD, item.LONGITUD]);
                             
-                            // Construct address string safely
-                            const addressParts = [
-                                item['TIPO VIALIDAD'],
-                                item['VIALIDAD'],
-                                item['NÚMERO EXTERIOR'],
-                                item['ASENTAMIENTO'],
-                                item['CÓDIGO POSTAL'] ? `C.P. ${item['CÓDIGO POSTAL']}` : null
-                            ];
-                            const fullAddress = addressParts.filter(part => part && part.toUpperCase() !== 'NO ESPECIFICADO' && part.toUpperCase() !== 'SIN DATO' && part.trim() !== '').join(' ');
-                            const addressHTML = fullAddress ? `<strong>Domicilio:</strong> ${fullAddress}<br>` : '';
-                            const streetViewEmbedUrl = `https://www.google.com/maps?layer=c&cbll=${item.LATITUD},${item.LONGITUD}&cbp=12,0,0,0,0&output=svembed`;
-
-                            marker.bindPopup(`
-                                <div class="text-sm" style="width: 260px;">
-                                    <strong class="text-base text-green-700">${item['NOMBRE DE LA UNIDAD']}</strong><br>
-                                    <strong>CLUES:</strong> ${item['CLUES']}<br>
-                                    <strong>Institución:</strong> ${item['NOMBRE DE LA INSTITUCION']}<br>
-                                    <strong>Tipo:</strong> ${item['NOMBRE TIPO ESTABLECIMIENTO']}<br>
-                                    <strong>Municipio:</strong> ${item['MUNICIPIO']}<br>
-                                    ${addressHTML}
-                                    ${(item['TELEFONO'] && item['TELEFONO'].toUpperCase() !== 'NO ESPECIFICADO') ? `<strong>Teléfono:</strong> ${item['TELEFONO']}<br>` : ''}
-                                    ${(item['CORREO ELECTRONICO'] && item['CORREO ELECTRONICO'].toUpperCase() !== 'NO ESPECIFICADO') ? `<strong>Correo:</strong> ${item['CORREO ELECTRONICO']}<br>` : ''}
-                                    <iframe
-                                        class="mt-2 w-full h-40 rounded border-0"
-                                        loading="lazy"
-                                        allowfullscreen
-                                        src="${streetViewEmbedUrl}">
-                                    </iframe>
-                                </div>
-                            `);
+                            // Ya no se usa bindPopup. Se usa un evento 'click'
+                            marker.on('click', () => {
+                                // Obtener datos de recursos (si existen)
+                                const resourceData = resources.get(item.CLUES) || {};
+                                // Combinar datos
+                                const combinedData = { ...item, ...resourceData };
+                                // Llamar a la función del componente App para abrir el modal
+                                onMarkerClick(combinedData);
+                            });
+                            
                             markerCluster.addLayer(marker);
                         });
                         
                         mapRef.current.addLayer(markerCluster);
                         markerLayerRef.current = markerCluster;
                         
-                        // Fit map bounds to the markers
+                        // Ajustar zoom a los marcadores
                         if (markerCluster.getBounds().isValid()) {
                             mapRef.current.fitBounds(markerCluster.getBounds(), { padding: [50, 50], maxZoom: 16 });
                         }
                     } else {
-                        // If no valid data after filtering, reset to default view of Mexico
-                        mapRef.current.setView([23.6345, -102.5528], 5);
+                        // Si no hay datos (por filtros), centrar en SLP
+                        mapRef.current.setView([23.8, -100.3], 7); // Vista de SLP
                     }
+                } else if (data) {
+                    // Si solo han cargado los datos principales
+                    mapRef.current.setView([23.8, -100.3], 7); // Vista de SLP
                 }
-            }, [data]);
+            }, [data, resources, onMarkerClick]); // Depende de datos y recursos
 
             return <div id="map" className="shadow-lg"></div>;
         };
 
-        // Chart Component using Chart.js
+        // Componente de Gráfica (Chart.js)
         const ChartComponent = ({ type, data, options }) => {
             const canvasRef = React.useRef(null);
             const chartRef = React.useRef(null);
@@ -196,14 +200,92 @@
                 </div>
             );
         };
+
+        // Componente de la Ventana Modal
+        const ReportModal = ({ data, onClose }) => {
+            // Construir dirección
+            const addressParts = [
+                data['TIPO VIALIDAD'],
+                data['VIALIDAD'],
+                data['NÚMERO EXTERIOR'],
+                data['ASENTAMIENTO'],
+                data['CÓDIGO POSTAL'] ? `C.P. ${data['CÓDIGO POSTAL']}` : null
+            ];
+            const fullAddress = addressParts.filter(part => part && part.toUpperCase() !== 'NO ESPECIFICADO' && part.toUpperCase() !== 'SIN DATO' && part.trim() !== '').join(' ');
+            const addressHTML = fullAddress ? `${fullAddress}` : 'No especificado';
+            const streetViewEmbedUrl = `https://www.google.com/maps?layer=c&cbll=${data.LATITUD},${data.LONGITUD}&cbp=12,0,0,0,0&output=svembed`;
+
+            return (
+                <div className="modal-backdrop" onClick={onClose}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        {/* Encabezado del Modal */}
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold text-green-800">{data['NOMBRE DE LA UNIDAD']}</h2>
+                            <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+                        </div>
+                        
+                        {/* Contenido del Modal */}
+                        <div className="text-sm space-y-2">
+                            <p><strong>CLUES:</strong> {data['CLUES']}</p>
+                            <p><strong>Institución:</strong> {data['NOMBRE DE LA INSTITUCION']}</p>
+                            <p><strong>Tipo:</strong> {data['NOMBRE TIPO ESTABLECIMIENTO']}</p>
+                            <p><strong>Municipio:</strong> {data['MUNICIPIO']}</p>
+                            <p><strong>Domicilio:</strong> {addressHTML}</p>
+                            {(data['TELEFONO'] && data['TELEFONO'].toUpperCase() !== 'NO ESPECIFICADO') && <p><strong>Teléfono:</strong> {data['TELEFONO']}</p>}
+                            {(data['CORREO ELECTRONICO'] && data['CORREO ELECTRONICO'].toUpperCase() !== 'NO ESPECIFICADO') && <p><strong>Correo:</strong> {data['CORREO ELECTRONICO']}</p>}
+
+                            {/* Reporte de Recursos (CON ETIQUETAS CORREGIDAS) */}
+                            <hr className="my-3" />
+                            <h3 className="text-lg font-semibold text-green-700">Recursos de la Unidad</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+                                <div className="space-y-1">
+                                    <p><strong>Consultorios Medicina General:</strong> {data['CONS_MG'] || "No especificado"}</p>
+                                    <p><strong>Consultorios Dentales:</strong> {data['CONS_ODONT'] || "No especificado"}</p>
+                                    <p><strong>Consultorios Especialidades:</strong> {data['CONS_ESP'] || "No especificado"}</p>
+                                    <p><strong>Servicio de Hospitalización:</strong> {data['AREA_HOSP'] || "No especificado"}</p>
+                                    <p><strong>Área de Urgencias:</strong> {data['AREA_URGENCIAS'] || "No especificado"}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p><strong>Total de Médicos Generales:</strong> {data['MEDICOS_GENERALES'] || "No especificado"}</p>
+                                    <p><strong>Total de Médicos Especialistas:</strong> {data['MEDICOS_ESP'] || "No especificado"}</p>
+                                    <p><strong>Total de Enfermeras:</strong> {data['ENFERMERAS'] || "No especificado"}</p>
+                                </div>
+                            </div>
+
+                            {/* Street View */}
+                            <hr className="my-3" />
+                             <iframe
+                                className="mt-2 w-full h-60 rounded border-0"
+                                loading="lazy"
+                                allowFullScreen
+                                src={streetViewEmbedUrl}>
+                            </iframe>
+                        </div>
+
+                        {/* Pie del Modal */}
+                        <div className="text-right mt-4">
+                            <button 
+                                onClick={onClose}
+                                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 font-semibold"
+                            >
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
         
-        // --- Main App Component ---
+        // --- Componente Principal de la Aplicación ---
         const App = () => {
             const [allData, setAllData] = React.useState([]);
             const [filteredData, setFilteredData] = React.useState([]);
+            const [resources, setResources] = React.useState(null); // Mapa de recursos
             const [loading, setLoading] = React.useState(true);
             const [error, setError] = React.useState(null);
             
+            const [modalData, setModalData] = React.useState(null); // Datos para el modal
+
             const [suggestions, setSuggestions] = React.useState([]);
             const searchContainerRef = React.useRef(null);
 
@@ -214,11 +296,19 @@
                 establishmentType: 'TODOS',
             });
 
-            // Data fetching effect
+            // Efecto de carga de datos (ambos CSV)
             React.useEffect(() => {
-                d3.csv(DATA_URL).then(data => {
+                Promise.all([
+                    d3.csv(DATA_URL),
+                    d3.csv(RESOURCES_DATA_URL)
+                ]).then(([data, resourcesData]) => {
                     setAllData(data);
                     setFilteredData(data);
+                    
+                    // Crear un Mapa de recursos para búsqueda rápida por CLUES
+                    const resourcesMap = new Map(resourcesData.map(item => [item.CLUES, item]));
+                    setResources(resourcesMap);
+
                     setLoading(false);
                 }).catch(err => {
                     console.error("Error fetching data:", err);
@@ -227,7 +317,7 @@
                 });
             }, []);
             
-            // Filtering logic effect
+            // Efecto de filtrado
             React.useEffect(() => {
                 let data = allData;
 
@@ -254,7 +344,7 @@
                 setFilteredData(data);
             }, [filters, allData]);
 
-            // Effect to handle clicks outside the search/suggestion box
+            // Efecto para cerrar sugerencias
             React.useEffect(() => {
                 const handleClickOutside = (event) => {
                     if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
@@ -268,7 +358,7 @@
             }, [searchContainerRef]);
 
 
-            // Memoized values for cascading filters
+            // Listas únicas para los filtros (Memoized)
             const uniqueInstitutions = React.useMemo(() => {
                 let data = allData;
                 if (filters.municipality !== 'TODOS') {
@@ -306,6 +396,7 @@
             }, [allData, filters.institution, filters.municipality]);
 
 
+            // Manejadores de eventos
             const handleFilterChange = (e) => {
                 const { name, value } = e.target;
                 setFilters(prev => ({ ...prev, [name]: value }));
@@ -345,7 +436,43 @@
                 });
             };
 
-            // Data processing for charts
+            // Función para descargar CSV
+            const downloadCSV = () => {
+                if (filteredData.length === 0) {
+                    // Evitar 'alert'
+                    console.warn("No hay datos filtrados para descargar.");
+                    return;
+                }
+                
+                // Usar las cabeceras del primer objeto de datos
+                const headers = Object.keys(allData[0] || {});
+                let csvContent = "data:text/csv;charset=utf-8,";
+                
+                // Escribir cabeceras
+                csvContent += headers.map(h => `"${h}"`).join(",") + "\n";
+
+                // Escribir filas
+                filteredData.forEach(row => {
+                    const values = headers.map(header => {
+                        const cell = row[header] || "";
+                        // Escapar comillas dobles reemplazándolas por dos comillas dobles
+                        const escapedCell = cell.toString().replace(/"/g, '""');
+                        // Envolver todas las celdas en comillas dobles para manejar comas y otros caracteres
+                        return `"${escapedCell}"`;
+                    });
+                    csvContent += values.join(",") + "\n";
+                });
+
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "clues_filtrado.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            // Datos para las gráficas (Memoized)
             const institutionData = React.useMemo(() => {
                 const counts = filteredData.reduce((acc, item) => {
                     acc[item['NOMBRE DE LA INSTITUCION']] = (acc[item['NOMBRE DE LA INSTITUCION']] || 0) + 1;
@@ -399,15 +526,14 @@
                 };
             }, [filteredData]);
 
-
+            // Renderizado condicional (Cargando, Error, Contenido)
             if (loading) {
                 return (
                     <div className="flex justify-center items-center h-screen">
                         <div className="text-center">
                             <svg className="animate-spin h-10 w-10 text-green-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8
- 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                             <p className="mt-2 text-lg font-semibold text-gray-700">Cargando datos...</p>
                         </div>
@@ -419,9 +545,10 @@
                 return <div className="text-center text-red-500 p-8">{error}</div>;
             }
 
+            // Contenido principal
             return (
                 <div className="min-h-screen">
-                    {/* Header */}
+                    {/* Encabezado */}
                     <header className="bg-white shadow-md sticky top-0 z-10">
                         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
                             <div className="flex items-center">
@@ -431,14 +558,15 @@
                         </div>
                     </header>
 
-                    {/* Main Content */}
+                    {/* Contenido Principal */}
                     <main className="container mx-auto p-4 lg:p-6">
-                        {/* Filters */}
+                        {/* Filtros */}
                         <div className="bg-white p-4 rounded-lg shadow-md mb-6">
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-end">
                                 <div className="relative sm:col-span-2 md:col-span-1">
                                     <label htmlFor="search-input" className="block text-sm font-medium text-gray-700 mb-1">Búsqueda</label>
-                                    <div ref={searchContainerRef}>
+
+<div ref={searchContainerRef}>
                                         <input
                                             id="search-input"
                                             type="text"
@@ -454,7 +582,7 @@
                                                 {suggestions.map((suggestion, index) => (
                                                     <li
                                                         key={index}
-                                                        className="p-2 text-sm text-gray-700 hover:bg-green-100 cursor-pointer"
+                                                        className="p-2 text-sm text-gray-700 hover:bg-green-100 cursor-pointer truncate"
                                                         onClick={() => handleSuggestionClick(suggestion)}
                                                     >
                                                         {suggestion}
@@ -482,32 +610,44 @@
                                         {uniqueEstablishmentTypes.map(type => <option key={type} value={type}>{type}</option>)}
                                     </select>
                                 </div>
-                                <button
-                                    onClick={handleResetFilters}
-                                    className="w-full p-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 font-semibold"
-                                >
-                                    Reestablecer
-                                </button>
+                                <div className="grid grid-cols-2 gap-2">
+                                     <button
+                                        onClick={handleResetFilters}
+                                        className="w-full p-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 font-semibold"
+                                    >
+                                        Reestablecer
+                                    </button>
+                                    <button
+                                        onClick={downloadCSV}
+                                        className="w-full p-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 font-semibold"
+                                    >
+                                        Descarga CSV
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Stats */}
+                        {/* Estadísticas */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                            <StatCard title="Total de Unidades" value={allData.length.toLocaleString()} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>} />
-                            <StatCard title="Unidades Filtradas" value={filteredData.length.toLocaleString()} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V10zM15 10a1 1 0 011-1h2a1 1 0 011 1v10a1 1 0 01-1 1h-2a1 1 0 01-1-1V10z" /></svg>} />
+                            <StatCard title="Total de Unidades" value={(allData.length || 0).toLocaleString()} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>} />
+                            <StatCard title="Unidades Filtradas" value={(filteredData.length || 0).toLocaleString()} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V10zM15 10a1 1 0 011-1h2a1 1 0 011 1v10a1 1 0 01-1 1h-2a1 1 0 01-1-1V10z" /></svg>} />
                             <StatCard title="Instituciones" value={uniqueInstitutions.length > 1 ? (uniqueInstitutions.length -1) : 0} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21v-1a6 6 0 00-5.176-5.97M15 21v-1a6 6 0 00-9-5.197" /></svg>} />
                             <StatCard title="Municipios" value={uniqueMunicipalities.length > 1 ? (uniqueMunicipalities.length - 1) : 0} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>} />
                         </div>
                         
-                        {/* Main Grid: Map and Charts */}
+                        {/* Cuadrícula Principal: Mapa y Gráficas */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Map */}
+                            {/* Mapa */}
                             <div className="lg:col-span-2 bg-white p-4 rounded-lg shadow-md">
                                 <h2 className="text-xl font-semibold text-gray-700 mb-4">Mapa de Unidades Médicas</h2>
-                                <MapView data={filteredData} />
+                                <MapView 
+                                    data={filteredData} 
+                                    resources={resources} 
+                                    onMarkerClick={setModalData} /* Pasa la función para abrir el modal */
+                                />
                             </div>
                             
-                            {/* Charts Column */}
+                            {/* Columna de Gráficas */}
                             <div className="flex flex-col gap-6">
                                 <div className="bg-white p-4 rounded-lg shadow-md">
                                     <h2 className="text-xl font-semibold text-gray-700 mb-2">Distribución por Institución</h2>
@@ -524,6 +664,14 @@
                             </div>
                         </div>
                     </main>
+
+                    {/* Renderizado condicional del Modal */}
+                    {modalData && (
+                        <ReportModal 
+                            data={modalData} 
+                            onClose={() => setModalData(null)} /* Pasa la función para cerrar el modal */
+                        />
+                    )}
                 </div>
             );
         };
@@ -535,4 +683,3 @@
 
 </body>
 </html>
-
