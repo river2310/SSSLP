@@ -328,6 +328,10 @@
                                         <p><strong>Consultorios Especialidades:</strong> {data['CONS_ESP'] || "No especificado"}</p>
                                         <p><strong>Servicio de Hospitalización:</strong> {data['AREA_HOSP'] || "No especificado"}</p>
                                         <p><strong>Área de Urgencias:</strong> {data['AREA_URGENCIAS'] || "No especificado"}</p>
+                                        {/* --- CAMPOS AÑADIDOS --- */}
+                                        <p><strong>Servicio de Hemodialisis:</strong> {data['HEMOD'] || "No especificado"}</p>
+                                        <p><strong>Laboratorio Clínico:</strong> {data['LABORATORIO'] || "No especificado"}</p>
+                                        {/* --- FIN DE CAMPOS AÑADIDOS --- */}
                                     </div>
                                     <div className="space-y-1">
                                         <p><strong>Total de Médicos Generales:</strong> {data['MEDICOS_GENERALES'] || "No especificado"}</p>
@@ -581,7 +585,7 @@
                     
                     const values = allHeaders.map(header => {
                         const cell = combinedRow[header] || "";
-                        // Escapar comillas dobles reemplazándolas por dos comillas dobles
+                        // Escapar comillas dobles reemplándolas por dos comillas dobles
                         const escapedCell = cell.toString().replace(/"/g, '""');
                         // Envolver todas las celdas en comillas dobles
                         return `"${escapedCell}"`;
