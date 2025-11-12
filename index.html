@@ -203,19 +203,17 @@
 
         // Componente de la Ventana Modal
         const ReportModal = ({ data, onClose }) => {
+            // --- Estado para la sección de recursos ---
+            const [isResourcesVisible, setIsResourcesVisible] = React.useState(false); // Inicia contraído
 
             // --- Lógica de Domicilio (con comas) ---
-            // Función auxiliar para limpiar y formatear una parte de la dirección
             const formatAddressPart = (value, suffix = '') => {
-                // Si el valor es nulo, vacío, o "no especificado", no lo incluimos.
                 if (!value || value.toUpperCase() === 'NO ESPECIFICADO' || value.toUpperCase() === 'SIN DATO' || value.trim() === '') {
                     return null;
                 }
-                // Si existe, le agregamos el sufijo (ej. una coma)
                 return value + suffix;
             };
 
-            // Construir el array de partes del domicilio
             const addressParts = [
                 formatAddressPart(data['TIPO DE VIALIDAD']),
                 formatAddressPart(data['VIALIDAD']),
@@ -226,7 +224,6 @@
                 data['CODIGO POSTAL'] ? `C.P. ${data['CODIGO POSTAL']}` : null
             ];
 
-            // Filtrar las partes nulas y unirlas con un espacio
             const fullAddress = addressParts.filter(part => part).join(' ');
             const addressHTML = fullAddress ? fullAddress : 'No especificado';
             // --- Fin de la Lógica de Domicilio ---
@@ -261,23 +258,35 @@
                             {(data['TELEFONO'] && data['TELEFONO'].toUpperCase() !== 'NO ESPECIFICADO') && <p><strong>Teléfono:</strong> {data['TELEFONO']}</p>}
                             {(data['CORREO ELECTRONICO'] && data['CORREO ELECTRONICO'].toUpperCase() !== 'NO ESPECIFICADO') && <p><strong>Correo:</strong> {data['CORREO ELECTRONICO']}</p>}
 
-                            {/* Reporte de Recursos (CON ETIQUETAS CORREGIDAS) */}
+                            {/* Reporte de Recursos (Desplegable) */}
                             <hr className="my-3" />
-                            <h3 className="text-lg font-semibold text-green-700">Recursos de la Unidad</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
-                                <div className="space-y-1">
-                                    <p><strong>Consultorios Medicina General:</strong> {data['CONS_MG'] || "No especificado"}</p>
-                                    <p><strong>Consultorios Dentales:</strong> {data['CONS_ODONT'] || "No especificado"}</p>
-                                    <p><strong>Consultorios Especialidades:</strong> {data['CONS_ESP'] || "No especificado"}</p>
-                                    <p><strong>Servicio de Hospitalización:</strong> {data['AREA_HOSP'] || "No especificado"}</p>
-                                    <p><strong>Área de Urgencias:</strong> {data['AREA_URGENCIAS'] || "No especificado"}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <p><strong>Total de Médicos Generales:</strong> {data['MEDICOS_GENERALES'] || "No especificado"}</p>
-                                    <p><strong>Total de Médicos Especialistas:</strong> {data['MEDICOS_ESP'] || "No especificado"}</p>
-                                    <p><strong>Total de Enfermeras:</strong> {data['ENFERMERAS'] || "No especificado"}</p>
-                                </div>
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-semibold text-green-700">Recursos de la Unidad</h3>
+                                <button
+                                    onClick={() => setIsResourcesVisible(!isResourcesVisible)}
+                                    className="text-sm text-green-600 hover:text-green-800 font-semibold px-2 py-1 rounded"
+                                >
+                                    {isResourcesVisible ? 'Ocultar' : 'Mostrar'}
+                                </button>
                             </div>
+
+                            {/* Contenido Desplegable */}
+                            {isResourcesVisible && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 mt-2">
+                                    <div className="space-y-1">
+                                        <p><strong>Consultorios Medicina General:</strong> {data['CONS_MG'] || "No especificado"}</p>
+                                        <p><strong>Consultorios Dentales:</strong> {data['CONS_ODONT'] || "No especificado"}</p>
+                                        <p><strong>Consultorios Especialidades:</strong> {data['CONS_ESP'] || "No especificado"}</p>
+                                        <p><strong>Servicio de Hospitalización:</strong> {data['AREA_HOSP'] || "No especificado"}</p>
+                                        <p><strong>Área de Urgencias:</strong> {data['AREA_URGENCIAS'] || "No especificado"}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p><strong>Total de Médicos Generales:</strong> {data['MEDICOS_GENERALES'] || "No especificado"}</p>
+                                        <p><strong>Total de Médicos Especialistas:</strong> {data['MEDICOS_ESP'] || "No especificado"}</p>
+                                        <p><strong>Total de Enfermeras:</strong> {data['ENFERMERAS'] || "No especificado"}</p>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Street View */}
                             <hr className="my-3" />
