@@ -203,16 +203,34 @@
 
         // Componente de la Ventana Modal
         const ReportModal = ({ data, onClose }) => {
-            // Construir dirección
+
+            // --- Lógica de Domicilio (con comas) ---
+            // Función auxiliar para limpiar y formatear una parte de la dirección
+            const formatAddressPart = (value, suffix = '') => {
+                // Si el valor es nulo, vacío, o "no especificado", no lo incluimos.
+                if (!value || value.toUpperCase() === 'NO ESPECIFICADO' || value.toUpperCase() === 'SIN DATO' || value.trim() === '') {
+                    return null;
+                }
+                // Si existe, le agregamos el sufijo (ej. una coma)
+                return value + suffix;
+            };
+
+            // Construir el array de partes del domicilio
             const addressParts = [
-                data['TIPO VIALIDAD'],
-                data['VIALIDAD'],
-                data['NÚMERO EXTERIOR'],
-                data['ASENTAMIENTO'],
-                data['CÓDIGO POSTAL'] ? `C.P. ${data['CÓDIGO POSTAL']}` : null
+                formatAddressPart(data['TIPO DE VIALIDAD']),
+                formatAddressPart(data['VIALIDAD']),
+                formatAddressPart(data['NUMERO EXTERIOR'], ','), // Coma aquí
+                formatAddressPart(data['NUMERO INTERIOR']),
+                formatAddressPart(data['TIPO DE ASENTAMIENTO']),
+                formatAddressPart(data['ASENTAMIENTO'], ','), // Coma aquí
+                data['CODIGO POSTAL'] ? `C.P. ${data['CODIGO POSTAL']}` : null
             ];
-            const fullAddress = addressParts.filter(part => part && part.toUpperCase() !== 'NO ESPECIFICADO' && part.toUpperCase() !== 'SIN DATO' && part.trim() !== '').join(' ');
-            const addressHTML = fullAddress ? `${fullAddress}` : 'No especificado';
+
+            // Filtrar las partes nulas y unirlas con un espacio
+            const fullAddress = addressParts.filter(part => part).join(' ');
+            const addressHTML = fullAddress ? fullAddress : 'No especificado';
+            // --- Fin de la Lógica de Domicilio ---
+
             const streetViewEmbedUrl = `https://www.google.com/maps?layer=c&cbll=${data.LATITUD},${data.LONGITUD}&cbp=12,0,0,0,0&output=svembed`;
 
             return (
@@ -565,8 +583,7 @@
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-end">
                                 <div className="relative sm:col-span-2 md:col-span-1">
                                     <label htmlFor="search-input" className="block text-sm font-medium text-gray-700 mb-1">Búsqueda</label>
-
-<div ref={searchContainerRef}>
+                                    <div ref={searchContainerRef}>
                                         <input
                                             id="search-input"
                                             type="text"
