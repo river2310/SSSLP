@@ -328,10 +328,8 @@
                                         <p><strong>Consultorios Especialidades:</strong> {data['CONS_ESP'] || "No especificado"}</p>
                                         <p><strong>Servicio de Hospitalización:</strong> {data['AREA_HOSP'] || "No especificado"}</p>
                                         <p><strong>Área de Urgencias:</strong> {data['AREA_URGENCIAS'] || "No especificado"}</p>
-                                        {/* --- CAMPOS AÑADIDOS --- */}
                                         <p><strong>Servicio de Hemodialisis:</strong> {data['HEMOD'] || "No especificado"}</p>
                                         <p><strong>Laboratorio Clínico:</strong> {data['LABORATORIO'] || "No especificado"}</p>
-                                        {/* --- FIN DE CAMPOS AÑADIDOS --- */}
                                     </div>
                                     <div className="space-y-1">
                                         <p><strong>Total de Médicos Generales:</strong> {data['MEDICOS_GENERALES'] || "No especificado"}</p>
@@ -687,7 +685,14 @@
                     <header className="bg-white shadow-md sticky top-0 z-10">
                         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
                             <div className="flex items-center">
-                                {/* <img src="data:image/png;base64,... /> */}
+                                {/* --- IMAGEN ACTUALIZADA --- */}
+                                <img 
+                                    src="https://d3dac9gdq8t83x.cloudfront.net/media/static/images/hor-verde.png" 
+                                    alt="Logo Salud Digital" 
+                                    className="h-12 w-auto mr-3"
+                                    onError={(e) => e.target.style.display='none'}
+                                />
+                                {/* --- FIN DE IMAGEN ACTUALIZADA --- */}
                                 <h1 className="text-2xl font-bold text-green-800">Catálogo CLUES</h1>
                             </div>
                         </div>
