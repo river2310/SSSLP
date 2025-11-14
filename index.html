@@ -146,7 +146,6 @@
                         "Vista Normal": osmStandard, // <-- CAMBIADO
                         "Satélite": googleHybrid      // <-- CAMBIADO
                     };
-                    // (Se eliminó "Satélite (Esri)")
 
                     // Añadir control de capas al mapa
                     layersControlRef.current = L.control.layers(baseMaps).addTo(mapRef.current);
@@ -548,7 +547,7 @@
             const uniqueEstablishmentTypes = React.useMemo(() => {
                 let data = allData;
                 if (filters.institution !== 'TODAS') {
-                    data = data.filter(d => d['NOMBRE DE LA INSTITUCION'] === filters.institution);
+                    data = data.filter(d => d['NOMBRE DE la INSTITUCION'] === filters.institution);
                 }
                 if (filters.municipality !== 'TODOS') {
                     data = data.filter(d => d['MUNICIPIO'] === filters.municipality);
@@ -683,10 +682,8 @@
             
             const establishmentTypeData = React.useMemo(() => {
                 const counts = filteredData.reduce((acc, item) => {
-                    // --- CORRECCIÓN DE SINTAXIS AQUÍ ---
                     const typeName = item['NOMBRE TIPO ESTABLECIMIENTO'] || "No especificado";
                     acc[typeName] = (acc[typeName] || 0) + 1;
-                    // --- FIN DE LA CORRECCIÓN ---
                     return acc;
                 }, {});
                 const sorted = Object.entries(counts).sort(([, a], [, b]) => b - a);
@@ -696,7 +693,7 @@
                         label: 'No. de Unidades',
                         data: sorted.map(d => d[1]),
                         backgroundColor: '#4ade80',
-                        borderColor: '#22c55e', 
+                        borderColor: '#22c55e',
                         borderWidth: 1
                     }]
                 };
@@ -818,14 +815,31 @@
                             </div>
                         </div>
 
-                        {/* Estadísticas */}
+                        {/* --- INICIO: Estadísticas con Iconos Nuevos (Calculadora) --- */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                            <StatCard title="Total de Unidades" value={(allData.length || 0).toLocaleString()} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>} />
-                            <StatCard title="Unidades Filtradas" value={(filteredData.length || 0).toLocaleString()} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V10zM15 10a1 1 0 011-1h2a1 1 0 011 1v10a1 1 0 01-1 1h-2a1 1 0 01-1-1V10z" /></svg>} />
-                            <StatCard title="Instituciones" value={uniqueInstitutions.length > 1 ? (uniqueInstitutions.length -1) : 0} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21v-1a6 6 0 00-5.176-5.97M15 21v-1a6 6 0 00-9-5.197" /></svg>} />
-                            <StatCard title="Municipios" value={uniqueMunicipalities.length > 1 ? (uniqueMunicipalities.length - 1) : 0} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>} />
+                            <StatCard 
+                                title="Total de Unidades" 
+                                value={(allData.length || 0).toLocaleString()} 
+                                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 3h.008v.008H8.25v-.008Zm0 3h.008v.008H8.25v-.008Zm3-6h.008v.008H11.25v-.008Zm0 3h.008v.008H11.25v-.008Zm0 3h.008v.008H11.25v-.008Zm3-6h.008v.008H14.25v-.008Zm0 3h.008v.008H14.25v-.008Zm0 3h.008v.008H14.25v-.008ZM6 18V9.75a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 .75.75V18m-12 0h12M6 18H4.5a.75.75 0 0 1-.75-.75V6.75A.75.75 0 0 1 4.5 6h15a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-.75.75H18" /></svg>} 
+                            />
+                            <StatCard 
+                                title="Unidades Filtradas" 
+                                value={(filteredData.length || 0).toLocaleString()} 
+                                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.591a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" /></svg>} 
+                            />
+                            <StatCard 
+                                title="Instituciones" 
+                                value={uniqueInstitutions.length > 1 ? (uniqueInstitutions.length -1) : 0} 
+                                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" /></svg>} 
+                            />
+                            <StatCard 
+                                title="Municipios" 
+                                value={uniqueMunicipalities.length > 1 ? (uniqueMunicipalities.length - 1) : 0} 
+                                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>} 
+                            />
                         </div>
-                        
+                        {/* --- FIN: Estadísticas con Iconos Nuevos --- */}
+
                         {/* Cuadrícula Principal: Mapa y Gráficas */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {/* Mapa */}
