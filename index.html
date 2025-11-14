@@ -335,9 +335,10 @@
                             <hr className="my-3" />
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-semibold text-[#055A1C]">Recursos de la Unidad</h3>
+                                {/* --- CAMBIO HOVER --- */}
                                 <button
                                     onClick={() => setIsResourcesVisible(!isResourcesVisible)}
-                                    className="text-sm text-[#055A1C] hover:text-[#055A1C]/80 font-semibold px-2 py-1 rounded"
+                                    className="text-sm text-[#055A1C] hover:text-[#e6007e] font-semibold px-2 py-1 rounded"
                                 >
                                     {isResourcesVisible ? 'Ocultar' : 'Mostrar'}
                                 </button>
@@ -382,16 +383,18 @@
                         )}
                         {/* Pie del Modal - Color de botón cambiado a #055A1C */}
                         <div className="flex justify-end items-center mt-4 space-x-2">
+                            {/* --- CAMBIO HOVER --- */}
                             <button
                                 onClick={handleGetDirections}
                                 disabled={loadingLocation}
-                                className="px-4 py-2 bg-[#055A1C] text-white rounded-md hover:bg-[#055A1C]/90 font-semibold disabled:bg-gray-400"
+                                className="px-4 py-2 bg-[#055A1C] text-white rounded-md hover:bg-[#e6007e] font-semibold disabled:bg-gray-400"
                             >
                                 {loadingLocation ? 'Cargando...' : 'Obtener Ruta'}
                             </button>
+                             {/* --- CAMBIO HOVER --- */}
                             <button 
                                 onClick={onClose}
-                                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 font-semibold"
+                                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-[#e6007e] hover:text-white font-semibold"
                             >
                                 Cerrar
                             </button>
@@ -624,7 +627,7 @@
                 document.body.removeChild(link);
             };
 
-            // Datos para las gráficas (Memoized) - Colores cambiados a #055A1C
+            // --- INICIO: Datos para las gráficas (con color de hover) ---
             const institutionData = React.useMemo(() => {
                 const counts = filteredData.reduce((acc, item) => {
                     // Usar la clave concatenada para la gráfica
@@ -650,7 +653,8 @@
                             'rgba(5,90,28,0.3)',
                             'rgba(5,90,28,0.2)'
                         ],
-                        hoverOffset: 4
+                        hoverOffset: 4,
+                        hoverBackgroundColor: '#e6007e' // Color de hover
                     }]
                 };
             }, [filteredData]);
@@ -668,7 +672,9 @@
                         data: sorted.map(d => d[1]),
                         backgroundColor: '#055A1C',
                         borderColor: '#055A1C',
-                        borderWidth: 1
+                        borderWidth: 1,
+                        hoverBackgroundColor: '#e6007e', // Color de hover
+                        hoverBorderColor: '#e6007e'      // Color de hover
                     }]
                 };
             }, [filteredData]);
@@ -687,10 +693,13 @@
                         data: sorted.map(d => d[1]),
                         backgroundColor: 'rgba(5,90,28,0.7)',
                         borderColor: '#055A1C',
-                        borderWidth: 1
+                        borderWidth: 1,
+                        hoverBackgroundColor: '#e6007e', // Color de hover
+                        hoverBorderColor: '#e6007e'      // Color de hover
                     }]
                 };
             }, [filteredData]);
+            // --- FIN: Datos para las gráficas (con color de hover) ---
 
             // Renderizado condicional (Cargando, Error, Contenido)
             if (loading) {
@@ -751,9 +760,10 @@
                                         {suggestions.length > 0 && (
                                             <ul className="absolute z-20 w-full bg-white border border-gray-200 rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg">
                                                 {suggestions.map((suggestion, index) => (
+                                                    // --- CAMBIO HOVER ---
                                                     <li
                                                         key={index}
-                                                        className="p-2 text-sm text-gray-700 hover:bg-[#055A1C]/10 cursor-pointer truncate"
+                                                        className="p-2 text-sm text-gray-700 hover:bg-[#e6007e]/10 cursor-pointer truncate"
                                                         onClick={() => handleSuggestionClick(suggestion)}
                                                     >
                                                         {suggestion}
@@ -790,16 +800,17 @@
                                     </select>
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
+                                    {/* --- CAMBIO HOVER --- */}
                                      <button
                                         onClick={handleResetFilters}
-                                        className="w-full p-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 font-semibold"
+                                        className="w-full p-2 bg-gray-200 text-gray-700 rounded-md hover:bg-[#e6007e] hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-400 font-semibold"
                                     >
                                         Reestablecer
                                     </button>
-                                    {/* Color de botón cambiado a #055A1C */}
+                                    {/* --- CAMBIO HOVER --- */}
                                     <button
                                         onClick={downloadCSV}
-                                        className="w-full p-2 bg-[#055A1C] text-white rounded-md hover:bg-[#055A1C]/90 focus:outline-none focus:ring-2 focus:ring-[#055A1C] font-semibold"
+                                        className="w-full p-2 bg-[#055A1C] text-white rounded-md hover:bg-[#e6007e] focus:outline-none focus:ring-2 focus:ring-[#055A1C] font-semibold"
                                     >
                                         Descarga CSV
                                     </button>
