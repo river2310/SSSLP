@@ -83,6 +83,8 @@
             overflow-y: auto;
             width: 600px; /* Ancho fijo para el modal */
         }
+        /* CSS para clusters revertido al default. 
+           Los marcadores verdes se definen en JS. */
     </style>
 </head>
 <body>
@@ -109,30 +111,42 @@
             </div>
         );
 
-        // Componente de Mapa (Leaflet) con CAPAS (Actualizado)
+        // Componente de Mapa (Leaflet) con MARCADORES VERDES
         const MapView = ({ data, resources, onMarkerClick }) => {
             const mapRef = React.useRef(null);
             const markerLayerRef = React.useRef(null);
             const layersControlRef = React.useRef(null); // Ref para el control de capas
+            const greenIconRef = React.useRef(null); // Ref para el ícono verde
 
             // Efecto para inicializar el mapa
             React.useEffect(() => {
                 if (!mapRef.current) {
                     // --- Definición de Capas de Mapa ---
-                    
-                    // Capa OpenStreetMap (Por defecto)
                     const osmStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                         maxZoom: 20
                     });
                     
-                    // Capa Híbrida (Google Satélite con Nombres)
                     const googleHybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{
                         maxZoom: 20,
                         subdomains:['mt0','mt1','mt2','mt3'],
                         attribution: 'Map data &copy;2025 Google'
                     });
-                    // --- Fin Definición de Capas ---
+                    
+                    // --- INICIO: Icono Verde Personalizado ---
+                    // Generar un ícono SVG y codificarlo en Base64 para usarlo en el mapa
+                    const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#16a34a" width="32px" height="32px"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`;
+                    const iconUrl = `data:image/svg+xml;base64,${btoa(svgIcon)}`;
+
+                    const greenIcon = new L.Icon({
+                        iconUrl: iconUrl,
+                        iconSize: [32, 32], // Tamaño del ícono
+                        iconAnchor: [16, 32], // Punta del marcador (centro abajo)
+                        popupAnchor: [0, -32] // Dónde aparece el popup relativo al anchor
+                    });
+                    // Guardar el ícono en una ref para que el efecto de marcadores lo pueda usar
+                    greenIconRef.current = greenIcon;
+                    // --- FIN: Icono Verde Personalizado ---
 
                     // Inicializar el mapa
                     mapRef.current = L.map('map', {
@@ -143,41 +157,39 @@
 
                     // --- Control de Capas ---
                     const baseMaps = {
-                        "Vista Normal": osmStandard, // <-- CAMBIADO
-                        "Satélite": googleHybrid      // <-- CAMBIADO
+                        "Vista Normal": osmStandard,
+                        "Satélite": googleHybrid
                     };
 
-                    // Añadir control de capas al mapa
                     layersControlRef.current = L.control.layers(baseMaps).addTo(mapRef.current);
-                    // --- Fin Control de Capas ---
                 }
             }, []); // Se ejecuta solo una vez
 
             // Efecto para actualizar los marcadores
             React.useEffect(() => {
-                // Limpiar marcadores existentes
                 if (markerLayerRef.current) {
                     mapRef.current.removeLayer(markerLayerRef.current);
                     markerLayerRef.current = null;
                 }
 
-                // Asegurarse que los datos y recursos estén cargados
-                if (data && resources) {
+                if (data && resources && greenIconRef.current) { // Asegurarse que el ícono esté listo
                     const validData = data.filter(d => d.LATITUD && d.LONGITUD && !isNaN(d.LATITUD) && !isNaN(d.LONGITUD));
 
                     if (validData.length > 0) {
-                        const markerCluster = L.markerClusterGroup();
+                        // Opciones del cluster: deshabilitar el zoom al hacer clic en un cluster
+                        const markerCluster = L.markerClusterGroup({ 
+                            zoomToBoundsOnClick: true 
+                        });
                         
                         validData.forEach(item => {
-                            const marker = L.marker([item.LATITUD, item.LONGITUD]);
+                            // Usar el ícono verde personalizado
+                            const marker = L.marker([item.LATITUD, item.LONGITUD], { 
+                                icon: greenIconRef.current 
+                            });
                             
-                            // Evento 'click' para abrir el modal
                             marker.on('click', () => {
-                                // Obtener datos de recursos (si existen)
                                 const resourceData = resources.get(item.CLUES) || {};
-                                // Combinar datos
                                 const combinedData = { ...item, ...resourceData };
-                                // Llamar a la función del componente App para abrir el modal
                                 onMarkerClick(combinedData);
                             });
                             
@@ -187,19 +199,16 @@
                         mapRef.current.addLayer(markerCluster);
                         markerLayerRef.current = markerCluster;
                         
-                        // Ajustar zoom a los marcadores
                         if (markerCluster.getBounds().isValid()) {
                             mapRef.current.fitBounds(markerCluster.getBounds(), { padding: [50, 50], maxZoom: 16 });
                         }
                     } else {
-                        // Si no hay datos (por filtros), centrar en SLP
                         mapRef.current.setView([23.8, -100.3], 7); // Vista de SLP
                     }
                 } else if (data) {
-                    // Si solo han cargado los datos principales
                     mapRef.current.setView([23.8, -100.3], 7); // Vista de SLP
                 }
-            }, [data, resources, onMarkerClick]); // Depende de datos y recursos
+            }, [data, resources, onMarkerClick]);
 
             return <div id="map" className="shadow-lg"></div>;
         };
@@ -236,10 +245,7 @@
 
         // Componente de la Ventana Modal
         const ReportModal = ({ data, onClose }) => {
-            // --- Estado para la sección de recursos ---
-            const [isResourcesVisible, setIsResourcesVisible] = React.useState(false); // Inicia contraído
-
-            // --- Estado para la geolocalización ---
+            const [isResourcesVisible, setIsResourcesVisible] = React.useState(false);
             const [loadingLocation, setLoadingLocation] = React.useState(false);
             const [locationError, setLocationError] = React.useState(null);
 
@@ -248,9 +254,7 @@
                 if (!value || value.toUpperCase() === 'NO ESPECIFICADO' || value.toUpperCase() === 'SIN DATO' || value.trim() === '') {
                     return null;
                 }
-                // Limpiar el valor antes de añadir el sufijo
                 const cleanedValue = value.trim();
-                // Si el valor ya termina con el sufijo (ej. una coma), no añadirlo de nuevo
                 if (cleanedValue.endsWith(suffix) && suffix !== '') {
                     return cleanedValue;
                 }
@@ -269,7 +273,6 @@
 
             const fullAddress = addressParts.filter(part => part).join(' ');
             const addressHTML = fullAddress ? fullAddress : 'No especificado';
-            // --- Fin de la Lógica de Domicilio ---
 
             // --- Lógica de Institución (con clave) ---
             const institutionKey = data['CLAVE DE LA INSTITUCION'];
@@ -277,7 +280,6 @@
             const institutionDisplay = (institutionKey && institutionKey !== 'NO ESPECIFICADO' && institutionKey.trim() !== '')
                                         ? `${institutionKey} - ${institutionName}`
                                         : institutionName;
-            // --- Fin de la Lógica de Institución ---
 
             const streetViewEmbedUrl = `https://www.google.com/maps?layer=c&cbll=${data.LATITUD},${data.LONGITUD}&cbp=12,0,0,0,0&output=svembed`;
 
@@ -287,45 +289,31 @@
                     setLocationError("Geolocalización no es soportada por este navegador.");
                     return;
                 }
-
                 setLoadingLocation(true);
                 setLocationError(null);
-
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         setLoadingLocation(false);
                         const userLat = position.coords.latitude;
                         const userLong = position.coords.longitude;
-                        
-                        const destinationLat = data.LATITUD;
-                        const destinationLong = data.LONGITUD;
-                        
-                        // Construir la URL de direcciones
-                        const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLong}&destination=${destinationLat},${destinationLong}`;
-                        
-                        // Abrir en una nueva pestaña
+                        const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLong}&destination=${data.LATITUD},${data.LONGITUD}`;
                         window.open(mapsUrl, '_blank'); 
                     },
                     (error) => {
                         setLoadingLocation(false);
                         switch(error.code) {
                             case error.PERMISSION_DENIED:
-                                setLocationError("Permiso de ubicación denegado.");
-                                break;
+                                setLocationError("Permiso de ubicación denegado."); break;
                             case error.POSITION_UNAVAILABLE:
-                                setLocationError("Información de ubicación no disponible.");
-                                break;
+                                setLocationError("Información de ubicación no disponible."); break;
                             case error.TIMEOUT:
-                                setLocationError("Tiempo de espera agotado al obtener ubicación.");
-                                break;
+                                setLocationError("Tiempo de espera agotado al obtener ubicación."); break;
                             default:
-                                setLocationError("Ocurrió un error al obtener la ubicación.");
-                                break;
+                                setLocationError("Ocurrió un error al obtener la ubicación."); break;
                         }
                     }
                 );
             };
-            // --- Fin de la Lógica de Google Maps ---
 
             return (
                 <div className="modal-backdrop" onClick={onClose}>
@@ -547,7 +535,7 @@
             const uniqueEstablishmentTypes = React.useMemo(() => {
                 let data = allData;
                 if (filters.institution !== 'TODAS') {
-                    data = data.filter(d => d['NOMBRE DE la INSTITUCION'] === filters.institution);
+                    data = data.filter(d => d['NOMBRE DE LA INSTITUCION'] === filters.institution);
                 }
                 if (filters.municipality !== 'TODOS') {
                     data = data.filter(d => d['MUNICIPIO'] === filters.municipality);
@@ -645,7 +633,7 @@
                     // Usar la clave concatenada para la gráfica
                     const key = item['CLAVE DE LA INSTITUCION'];
                     const name = item['NOMBRE DE LA INSTITUCION'];
-                    const combinedKey = (key && key !== 'NO ESPECIFICADO' && key.trim() !== '') ? `${key} - ${name}` : name;
+                    const combinedKey = (key && key !== 'NO ESPECIFICADO' && key.trim() !== '') ? `${key} - ${name}` : (name || "No especificado");
                     
                     acc[combinedKey] = (acc[combinedKey] || 0) + 1;
                     return acc;
