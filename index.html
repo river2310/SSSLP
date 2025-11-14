@@ -27,13 +27,14 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Google Fonts: Inter --><link rel="preconnect" href="https://fonts.googleapis.com">
+    <!-- Google Fonts: Montserrat (Cambiado de Inter) --><link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Custom Styles --><style>
         body {
-            font-family: 'Inter', sans-serif;
+            /* Fuente cambiada a Montserrat */
+            font-family: 'Montserrat', sans-serif;
             background-color: #f0f4f8; /* Light gray-blue background */
         }
         .chart-container {
@@ -112,12 +113,12 @@
             </div>
         );
 
-        // Componente de Mapa (Leaflet) con MARCADORES VERDES
+        // Componente de Mapa (Leaflet) con MARCADORES ROJOS
         const MapView = ({ data, resources, onMarkerClick }) => {
             const mapRef = React.useRef(null);
             const markerLayerRef = React.useRef(null);
             const layersControlRef = React.useRef(null); // Ref para el control de capas
-            const greenIconRef = React.useRef(null); // Ref para el ícono verde
+            const redIconRef = React.useRef(null); // Ref para el ícono rojo
 
             // Efecto para inicializar el mapa
             React.useEffect(() => {
@@ -134,19 +135,20 @@
                         attribution: 'Map data &copy;2025 Google'
                     });
                     
-                    // --- INICIO: Icono Verde Personalizado (con borde blanco) ---
+                    // --- INICIO: Icono Rojo Personalizado (con borde blanco) ---
                     // Se añade stroke="white" y stroke-width="1.5" al path
-                    const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#055A1C" width="32px" height="32px"><path stroke="white" stroke-width="1.5" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`;
+                    // Se cambia fill="#055A1C" por fill="#EA4335" (Rojo Google)
+                    const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#EA4335" width="32px" height="32px"><path stroke="white" stroke-width="1.5" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`;
                     const iconUrl = `data:image/svg+xml;base64,${btoa(svgIcon)}`;
 
-                    const greenIcon = new L.Icon({
+                    const redIcon = new L.Icon({
                         iconUrl: iconUrl,
                         iconSize: [32, 32],
                         iconAnchor: [16, 32],
                         popupAnchor: [0, -32] 
                     });
-                    greenIconRef.current = greenIcon;
-                    // --- FIN: Icono Verde Personalizado ---
+                    redIconRef.current = redIcon;
+                    // --- FIN: Icono Rojo Personalizado ---
 
                     // Inicializar el mapa
                     mapRef.current = L.map('map', {
@@ -172,7 +174,7 @@
                     markerLayerRef.current = null;
                 }
 
-                if (data && resources && greenIconRef.current) { 
+                if (data && resources && redIconRef.current) { // Usar redIconRef
                     const validData = data.filter(d => d.LATITUD && d.LONGITUD && !isNaN(d.LATITUD) && !isNaN(d.LONGITUD));
 
                     if (validData.length > 0) {
@@ -182,7 +184,7 @@
                         
                         validData.forEach(item => {
                             const marker = L.marker([item.LATITUD, item.LONGITUD], { 
-                                icon: greenIconRef.current 
+                                icon: redIconRef.current // Usar el ícono rojo
                             });
                             
                             marker.on('click', () => {
@@ -707,8 +709,8 @@
                 return (
                     <div className="flex justify-center items-center h-screen">
                         <div className="text-center">
-                             {/* Color de spinner cambiado a #055A1C */}
-                            <svg className="animate-spin h-10 w-10 text-[#055A1C] mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                             {/* Color de spinner cambiado a #055A1A */}
+                            <svg className="animate-spin h-10 w-10 text-[#055A1A] mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
