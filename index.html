@@ -277,8 +277,8 @@
             const institutionKey = data['CLAVE DE LA INSTITUCION'];
             const institutionName = data['NOMBRE DE LA INSTITUCION'];
             const institutionDisplay = (institutionKey && institutionKey !== 'NO ESPECIFICADO' && institutionKey.trim() !== '')
-                                        ? `${institutionKey} - ${institutionName}`
-                                        : institutionName;
+                                    ? `${institutionKey} - ${institutionName}`
+                                    : institutionName;
 
             const streetViewEmbedUrl = `https://www.google.com/maps?layer=c&cbll=${data.LATITUD},${data.LONGITUD}&cbp=12,0,0,0,0&output=svembed`;
 
@@ -513,8 +513,8 @@
                 // Convertir el Map a un array de objetos para el dropdown
                 const sortedInstitutions = Array.from(institutionsMap.entries()).map(([name, key]) => {
                     const combinedKey = (key && key !== 'NO ESPECIFICADO' && key.trim() !== '') 
-                                        ? `${key} - ${name}` 
-                                        : name;
+                                            ? `${key} - ${name}` 
+                                            : name;
                     return { name: name, key: combinedKey }; // name es el valor, key es la etiqueta
                 }).sort((a, b) => a.key.localeCompare(b.key)); // Ordenar por la etiqueta visible
 
@@ -747,7 +747,7 @@
                         {/* Disclaimer */}
                         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 text-sm text-yellow-800 shadow-sm rounded-r-lg">
                             <p>
-                                <strong>Nota:</strong> Las Unidades Médicas a las que se hace referencia han sido transferidas al Organismo Público Descentralizado denominado IMSS-BIENESTAR al marco del Convenio de Coordinación publicado en el Diario Oficial de la Federación el 20 de diciembre de 2023, así como su modificatorio publicado el 7 de marzo de 2024.
+                                <strong>Nota:</strong> La transferencia al Organismo Público Descentralizado IMSS-BIENESTAR aplica exclusivamente a las Unidades Médicas provenientes de los Servicios de Salud de San Luis Potosí, en el marco del Convenio de Coordinación publicado en el Diario Oficial de la Federación el 20 de diciembre del 2023 y su modificatorio del 7 de marzo del 2024. El resto de Unidades Médicas mostradas pertenecen a sus respectivas instituciones
                             </p>
                         </div>
 
