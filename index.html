@@ -113,12 +113,12 @@
             </div>
         );
 
-        // Componente de Mapa (Leaflet) con MARCADORES VERDES
+        // Componente de Mapa (Leaflet) con MARCADORES ROJOS
         const MapView = ({ data, resources, onMarkerClick }) => {
             const mapRef = React.useRef(null);
             const markerLayerRef = React.useRef(null);
             const layersControlRef = React.useRef(null); // Ref para el control de capas
-            const greenIconRef = React.useRef(null); // Ref para el ícono verde
+            const markerIconRef = React.useRef(null); // Ref para el ícono
 
             // Efecto para inicializar el mapa
             React.useEffect(() => {
@@ -135,19 +135,22 @@
                         attribution: 'Map data &copy;2025 Google'
                     });
                     
-                    // --- INICIO: Icono Verde Personalizado (con borde blanco) ---
-                    // Se añade stroke="white" y stroke-width="1.5" al path
-                    const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#055A1C" width="32px" height="32px"><path stroke="white" stroke-width="1.5" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`;
+                    // --- INICIO: Icono Rojo estilo Google Maps ---
+                    // Se usa el color rojo característico (#EA4335) con un punto oscuro al centro
+                    const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#EA4335" width="40px" height="40px">
+                        <path stroke="#c5221f" stroke-width="1" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        <circle cx="12" cy="9" r="2.5" fill="#752f2f"/>
+                        </svg>`;
                     const iconUrl = `data:image/svg+xml;base64,${btoa(svgIcon)}`;
 
-                    const greenIcon = new L.Icon({
+                    const customIcon = new L.Icon({
                         iconUrl: iconUrl,
-                        iconSize: [32, 32],
-                        iconAnchor: [16, 32],
-                        popupAnchor: [0, -32] 
+                        iconSize: [40, 40],
+                        iconAnchor: [20, 40],
+                        popupAnchor: [0, -40] 
                     });
-                    greenIconRef.current = greenIcon;
-                    // --- FIN: Icono Verde Personalizado ---
+                    markerIconRef.current = customIcon;
+                    // --- FIN: Icono Rojo Personalizado ---
 
                     // Inicializar el mapa
                     mapRef.current = L.map('map', {
@@ -173,7 +176,7 @@
                     markerLayerRef.current = null;
                 }
 
-                if (data && resources && greenIconRef.current) { 
+                if (data && resources && markerIconRef.current) { 
                     const validData = data.filter(d => d.LATITUD && d.LONGITUD && !isNaN(d.LATITUD) && !isNaN(d.LONGITUD));
 
                     if (validData.length > 0) {
@@ -183,7 +186,7 @@
                         
                         validData.forEach(item => {
                             const marker = L.marker([item.LATITUD, item.LONGITUD], { 
-                                icon: greenIconRef.current 
+                                icon: markerIconRef.current 
                             });
                             
                             marker.on('click', () => {
@@ -885,7 +888,7 @@
 
                     {/* Pie de Página */}
                     <footer className="text-center text-sm text-gray-500 py-4 mt-4 border-t border-gray-200">
-                        Catálogo CLUES - Versión de datos: Cierre de Septiembre 2025
+                        Catálogo CLUES - Versión de datos: Cierre de Octubre 2025
                     </footer>
                     {/* Fin del Pie de Página */}
 
