@@ -50,10 +50,6 @@ Base de Datos Principal: Datos generales de ubicación y tipo de unidad.
 
 Base de Datos de Recursos: Información detallada sobre personal y equipamiento.
 
-⚠️ Aviso Legal
-
-Nota Importante: La transferencia al Organismo Público Descentralizado IMSS-BIENESTAR aplica exclusivamente a las Unidades Médicas provenientes de los Servicios de Salud de San Luis Potosí, en el marco del Convenio de Coordinación publicado en el Diario Oficial de la Federación el 20 de diciembre del 2023 y su modificatorio del 7 de marzo del 2024. El resto de Unidades Médicas mostradas pertenecen a sus respectivas instituciones.
-
 📄 Licencia
 
 Este proyecto está bajo la Licencia MIT - mira el archivo LICENSE.md para detalles.
