@@ -44,11 +44,9 @@ Babel Standalone: Para interpretar JSX directamente en el navegador.
 
 📂 Fuente de Datos
 
-La aplicación consume datos en tiempo real desde hojas de cálculo de Google Sheets publicadas como CSV:
+Base de Datos Principal: Catálogo CLUES publicado por la Dirección General de Información en Salud (DGIS).
 
-Base de Datos Principal: Datos generales de ubicación y tipo de unidad.
-
-Base de Datos de Recursos: Información detallada sobre personal y equipamiento.
+Base de Datos de Recursos: Subsistema de Información de Equipamiento, Recursos Humanos e Infraestructura para la Atención de la Salud (SINERHIAS).
 
 📄 Licencia
 
