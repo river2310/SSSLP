@@ -416,10 +416,17 @@
                 };
             }, [filteredData]);
 
+            // OPTIMIZACIÓN: Memorizar opciones de gráficas con alineación a la izquierda para la leyenda de Instituciones
             const chartOptions = React.useMemo(() => ({
                 doughnut: { 
                     maintainAspectRatio: false, 
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } 
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom', 
+                            align: 'start', // Alinea los items de la leyenda a la izquierda
+                            labels: { boxWidth: 10, font: { size: 10 }, textAlign: 'left' } 
+                        } 
+                    } 
                 },
                 bar: { 
                     indexAxis: 'y', 
@@ -550,7 +557,7 @@
                             </div>
                             <select value={filters.institution} onChange={e => setFilters({...filters, institution: e.target.value})} className="p-2 border rounded">{uniqueInstitutions.map(i => <option key={i.key} value={i.name}>{i.key}</option>)}</select>
                             <select value={filters.municipality} onChange={e => setFilters({...filters, municipality: e.target.value})} className="p-2 border rounded">{uniqueMunicipalities.map(m => <option key={m} value={m}>{m}</option>)}</select>
-                            <button onClick={() => setFilters({search: '', institution: 'TODAS', municipality: 'TODOS'})} className="bg-gray-200 p-2 rounded hover:bg-[#e6007e] hover:text-white transition-colors">Limpiar</button>
+                            <button onClick={() => setFilters({search: '', institution: 'TODAS', municipality: 'TODOS'})} className="bg-gray-200 p-2 rounded hover:bg-[#e6007e] hover:text-white transition-colors font-medium">Limpiar</button>
                             <button onClick={downloadCSV} className="bg-[#055A1C] text-white p-2 rounded hover:bg-[#e6007e] transition-colors flex items-center justify-center gap-2 font-medium">Descargar Catálogo</button>
                         </div>
 
