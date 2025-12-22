@@ -297,12 +297,19 @@
                                 </button>
                             </div>
                             {isResourcesVisible && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 mt-2">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
                                     <div className="space-y-1">
                                         <p><strong>Cons. Med. General:</strong> {data['CONS_MG'] || "0"}</p>
-                                        <p><strong>Médicos Generales:</strong> {data['MEDICOS_GENERALES'] || "0"}</p>
+                                        <p><strong>Cons. Dentales:</strong> {data['CONS_ODONT'] || "0"}</p>
+                                        <p><strong>Cons. Especialidades:</strong> {data['CONS_ESP'] || "0"}</p>
+                                        <p><strong>Hospitalización:</strong> {data['AREA_HOSP'] || "0"}</p>
+                                        <p><strong>Área de Urgencias:</strong> {data['AREA_URGENCIAS'] || "0"}</p>
                                     </div>
                                     <div className="space-y-1">
+                                        <p><strong>Hemodiálisis:</strong> {data['HEMOD'] || "0"}</p>
+                                        <p><strong>Laboratorio Clínico:</strong> {data['LABORATORIO'] || "0"}</p>
+                                        <p><strong>Médicos Generales:</strong> {data['MEDICOS_GENERALES'] || "0"}</p>
+                                        <p><strong>Médicos Especialistas:</strong> {data['MEDICOS_ESP'] || "0"}</p>
                                         <p><strong>Enfermeras:</strong> {data['ENFERMERAS'] || "0"}</p>
                                     </div>
                                 </div>
@@ -371,7 +378,8 @@
                         } else {
                             setAllData(data);
                             setFilteredData(data);
-                            setResources(new Map(resData.map(item => [item.CLUES.trim(), item])));
+                            // Limpiar y mapear recursos usando CLUES como llave única
+                            setResources(new Map(resData.map(item => [item.CLUES ? item.CLUES.trim() : '', item])));
                         }
                         setLoading(false);
                     }).catch((err) => {
@@ -416,14 +424,13 @@
                 };
             }, [filteredData]);
 
-            // OPTIMIZACIÓN: Memorizar opciones de gráficas con alineación a la izquierda para la leyenda de Instituciones
             const chartOptions = React.useMemo(() => ({
                 doughnut: { 
                     maintainAspectRatio: false, 
                     plugins: { 
                         legend: { 
                             position: 'bottom', 
-                            align: 'start', // Alinea los items de la leyenda a la izquierda
+                            align: 'start',
                             labels: { boxWidth: 10, font: { size: 10 }, textAlign: 'left' } 
                         } 
                     } 
@@ -454,11 +461,11 @@
             const downloadCSV = () => {
                 if (filteredData.length === 0) return;
                 const baseHeaders = Object.keys(allData[0] || {});
-                const resHeaders = Object.keys(resources.values().next().value || {}).filter(h => h !== 'CLUES');
+                const resHeaders = resources.size > 0 ? Object.keys(resources.values().next().value || {}).filter(h => h !== 'CLUES') : [];
                 const allHeaders = [...baseHeaders, ...resHeaders];
                 let csv = "\uFEFF" + allHeaders.map(h => `"${h}"`).join(",") + "\r\n";
                 filteredData.forEach(row => {
-                    const res = resources.get(row.CLUES.trim()) || {};
+                    const res = resources.get(row.CLUES ? row.CLUES.trim() : '') || {};
                     const combined = { ...row, ...res };
                     csv += allHeaders.map(h => `"${(combined[h] || "").toString().replace(/"/g, '""')}"`).join(",") + "\r\n";
                 });
@@ -551,14 +558,14 @@
                                 />
                                 {suggestions.length > 0 && (
                                     <ul className="absolute z-20 w-full bg-white border border-gray-200 rounded-md mt-1 max-h-60 overflow-y-auto shadow-xl">
-                                        {suggestions.map((s, i) => <li key={i} onClick={() => { setFilters({ ...filters, search: s }); setSuggestions([]); }} className="p-2 text-sm hover:bg-[#e6007e] hover:text-white cursor-pointer truncate transition-colors">{s}</li>)}
+                                        {suggestions.map((s, i) => <li key={i} onClick={() => { setFilters({ ...filters, search: s }); setSuggestions([]); }} className="p-2 text-sm hover:bg-[#e6007e] hover:text-white cursor-pointer truncate transition-colors font-medium">{s}</li>)}
                                     </ul>
                                 )}
                             </div>
-                            <select value={filters.institution} onChange={e => setFilters({...filters, institution: e.target.value})} className="p-2 border rounded">{uniqueInstitutions.map(i => <option key={i.key} value={i.name}>{i.key}</option>)}</select>
-                            <select value={filters.municipality} onChange={e => setFilters({...filters, municipality: e.target.value})} className="p-2 border rounded">{uniqueMunicipalities.map(m => <option key={m} value={m}>{m}</option>)}</select>
-                            <button onClick={() => setFilters({search: '', institution: 'TODAS', municipality: 'TODOS'})} className="bg-gray-200 p-2 rounded hover:bg-[#e6007e] hover:text-white transition-colors font-medium">Limpiar</button>
-                            <button onClick={downloadCSV} className="bg-[#055A1C] text-white p-2 rounded hover:bg-[#e6007e] transition-colors flex items-center justify-center gap-2 font-medium">Descargar Catálogo</button>
+                            <select value={filters.institution} onChange={e => setFilters({...filters, institution: e.target.value})} className="p-2 border rounded text-sm">{uniqueInstitutions.map(i => <option key={i.key} value={i.name}>{i.key}</option>)}</select>
+                            <select value={filters.municipality} onChange={e => setFilters({...filters, municipality: e.target.value})} className="p-2 border rounded text-sm">{uniqueMunicipalities.map(m => <option key={m} value={m}>{m}</option>)}</select>
+                            <button onClick={() => setFilters({search: '', institution: 'TODAS', municipality: 'TODOS'})} className="bg-gray-200 p-2 rounded hover:bg-[#e6007e] hover:text-white transition-colors font-medium text-sm">Limpiar</button>
+                            <button onClick={downloadCSV} className="bg-[#055A1C] text-white p-2 rounded hover:bg-[#e6007e] transition-colors flex items-center justify-center gap-2 font-medium text-sm">Descargar Catálogo</button>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -572,11 +579,11 @@
                             <div className="lg:col-span-2 bg-white p-4 rounded-lg shadow-md"><MapView data={filteredData} resources={resources} onMarkerClick={setModalData} /></div>
                             <div className="flex flex-col gap-6">
                                 <div className="bg-white p-4 rounded-lg shadow-md">
-                                    <h2 className="font-bold mb-4 text-xs uppercase text-gray-500">Instituciones</h2>
+                                    <h2 className="font-bold mb-4 text-xs uppercase text-gray-500 tracking-wider">Instituciones</h2>
                                     <ChartComponent type="doughnut" data={institutionChartData} options={chartOptions.doughnut} />
                                 </div>
                                 <div className="bg-white p-4 rounded-lg shadow-md">
-                                    <h2 className="font-bold mb-4 text-xs uppercase text-gray-500">Top 10 Municipios</h2>
+                                    <h2 className="font-bold mb-4 text-xs uppercase text-gray-500 tracking-wider">Top 10 Municipios</h2>
                                     <ChartComponent type="bar" data={topMunicipalitiesData} options={chartOptions.bar} />
                                 </div>
                             </div>
