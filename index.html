@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catálogo CLUES</title>
     
-    <!-- Favicon --><link rel="icon" type="image/png" href="https://d3dac9gdq8t83x.cloudfront.net/media/static/images/favicons/logo-verde.png">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://d3dac9gdq8t83x.cloudfront.net/media/static/images/favicons/logo-verde.png">
     
-    <!-- Tailwind CSS for styling --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Leaflet.js for maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -21,25 +23,28 @@
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     
-    <!-- D3.js for CSV parsing --><script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- D3.js for CSV parsing -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     
-    <!-- React and Babel for frontend logic --><script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <!-- React and Babel for frontend logic -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Google Fonts: Montserrat (Cambiado de Inter) --><link rel="preconnect" href="https://fonts.googleapis.com">
+    <!-- Google Fonts: Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Custom Styles --><style>
+    <!-- Custom Styles -->
+    <style>
         body {
-            /* Fuente cambiada a Montserrat */
             font-family: 'Montserrat', sans-serif;
-            background-color: #f0f4f8; /* Light gray-blue background */
+            background-color: #f0f4f8;
         }
         .chart-container {
             position: relative;
-            height: 300px;
+            height: 250px;
             width: 100%;
         }
         #map {
@@ -47,7 +52,6 @@
             border-radius: 0.5rem;
             z-index: 0;
         }
-        /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -61,7 +65,6 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
-        /* Estilos para el Modal */
         .modal-backdrop {
             position: fixed;
             top: 0;
@@ -82,51 +85,59 @@
             max-width: 90%;
             max-height: 90vh;
             overflow-y: auto;
-            width: 600px; /* Ancho fijo para el modal */
+            width: 600px;
         }
-        /* CSS para clusters revertido al default. 
-           Los marcadores verdes se definen en JS. */
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        // URL principal (exclusivo SLP)
+        // URLs oficiales de datos
         const DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQjbzFt4pmSA-WFGGjY527FzN81qjhgWKC7KVfKllt-qHjYt6rtOHRoseOhxa0qkcIvsRT6noCc9YIJ/pub?gid=0&single=true&output=csv';
-        // URL de recursos (consultorios, médicos, etc.)
         const RESOURCES_DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSxlP3IcVl4224XrW67L8AbTP3zlH5WzK4sC4PRMNQmOMtiP7ZEzNZ7me7XtBL66dKDBwSYPtqwS4fH/pub?gid=0&single=true&output=csv';
         
-        // --- React Components ---
-
-        // Componente de tarjeta de estadística
         const StatCard = ({ title, value, icon }) => (
             <div className="bg-white p-4 rounded-lg shadow-md flex items-center">
-                {/* Color de fondo y texto del ícono cambiados a #055A1C (con opacidad) */}
-                <div className="bg-[#055A1C]/10 text-[#055A1C] p-3 rounded-full mr-4">
+                <div className="bg-[#055A1C]/10 text-[#055A1C] p-3 rounded-full mr-4 shrink-0">
                     {icon}
                 </div>
-                <div>
-                    <p className="text-sm text-gray-500">{title}</p>
-                    <p className="text-2xl font-bold text-gray-800">{value}</p>
+                <div className="min-w-0">
+                    <p className="text-[10px] md:text-xs font-semibold text-gray-500 uppercase tracking-wider truncate">{title}</p>
+                    <p className="text-xl md:text-2xl font-bold text-gray-800">{value}</p>
                 </div>
             </div>
         );
 
-        // Componente de Mapa (Leaflet) con MARCADORES ROJOS
+        const ContactCard = ({ name, position, email, initials }) => (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center space-x-4 hover:shadow-md transition-shadow duration-300">
+                <div className="flex-shrink-0 w-12 h-12 bg-[#055A1C] rounded-full flex items-center justify-center text-white font-bold text-lg">
+                    {initials}
+                </div>
+                <div className="flex-grow text-left min-w-0">
+                    <h3 className="text-sm md:text-base font-bold text-gray-800 truncate">{name}</h3>
+                    <p className="text-[11px] md:text-xs text-gray-500 font-medium leading-tight mb-1">{position}</p>
+                    <div className="flex items-center text-[#055A1C] hover:text-[#e6007e] transition-colors">
+                        <svg className="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <a href={`mailto:${email}`} className="text-[11px] md:text-xs font-semibold truncate underline decoration-[#055A1C]/20 underline-offset-2">
+                            {email}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        );
+
         const MapView = ({ data, resources, onMarkerClick }) => {
             const mapRef = React.useRef(null);
             const markerLayerRef = React.useRef(null);
-            const layersControlRef = React.useRef(null); // Ref para el control de capas
-            const markerIconRef = React.useRef(null); // Ref para el ícono
+            const markerIconRef = React.useRef(null);
 
-            // Efecto para inicializar el mapa
             React.useEffect(() => {
                 if (!mapRef.current) {
-                    // --- Definición de Capas de Mapa ---
                     const osmStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                        maxZoom: 20
+                        attribution: '&copy; OpenStreetMap contributors'
                     });
                     
                     const googleHybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{
@@ -135,778 +146,388 @@
                         attribution: 'Map data &copy;2025 Google'
                     });
                     
-                    // --- INICIO: Icono Rojo estilo Google Maps ---
-                    // Se usa el color rojo característico (#EA4335) con un punto oscuro al centro
                     const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#EA4335" width="40px" height="40px">
                         <path stroke="#c5221f" stroke-width="1" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                         <circle cx="12" cy="9" r="2.5" fill="#752f2f"/>
                         </svg>`;
                     const iconUrl = `data:image/svg+xml;base64,${btoa(svgIcon)}`;
 
-                    const customIcon = new L.Icon({
+                    markerIconRef.current = new L.Icon({
                         iconUrl: iconUrl,
                         iconSize: [40, 40],
                         iconAnchor: [20, 40],
                         popupAnchor: [0, -40] 
                     });
-                    markerIconRef.current = customIcon;
-                    // --- FIN: Icono Rojo Personalizado ---
 
-                    // Inicializar el mapa
                     mapRef.current = L.map('map', {
-                        center: [23.6345, -102.5528],
-                        zoom: 5,
-                        layers: [osmStandard] // Capa por defecto
+                        center: [22.15, -100.98],
+                        zoom: 8,
+                        layers: [osmStandard]
                     });
 
-                    // --- Control de Capas ---
-                    const baseMaps = {
+                    L.control.layers({
                         "Vista Normal": osmStandard,
                         "Satélite": googleHybrid
-                    };
-
-                    layersControlRef.current = L.control.layers(baseMaps).addTo(mapRef.current);
+                    }).addTo(mapRef.current);
                 }
-            }, []); // Se ejecuta solo una vez
+            }, []);
 
-            // Efecto para actualizar los marcadores
             React.useEffect(() => {
                 if (markerLayerRef.current) {
                     mapRef.current.removeLayer(markerLayerRef.current);
-                    markerLayerRef.current = null;
                 }
 
-                if (data && resources && markerIconRef.current) { 
-                    const validData = data.filter(d => d.LATITUD && d.LONGITUD && !isNaN(d.LATITUD) && !isNaN(d.LONGITUD));
-
-                    if (validData.length > 0) {
-                        const markerCluster = L.markerClusterGroup({ 
-                            zoomToBoundsOnClick: true 
-                        });
+                if (data && markerIconRef.current) { 
+                    const markerCluster = L.markerClusterGroup({ zoomToBoundsOnClick: true });
+                    
+                    data.forEach(item => {
+                        const lat = parseFloat(item.LATITUD);
+                        const lng = parseFloat(item.LONGITUD);
                         
-                        validData.forEach(item => {
-                            const marker = L.marker([item.LATITUD, item.LONGITUD], { 
-                                icon: markerIconRef.current 
-                            });
-                            
+                        if (!isNaN(lat) && !isNaN(lng)) {
+                            const marker = L.marker([lat, lng], { icon: markerIconRef.current });
                             marker.on('click', () => {
-                                const resourceData = resources.get(item.CLUES) || {};
-                                const combinedData = { ...item, ...resourceData };
-                                onMarkerClick(combinedData);
+                                const resourceData = resources.get(item.CLUES.trim()) || {};
+                                onMarkerClick({ ...item, ...resourceData });
                             });
-                            
                             markerCluster.addLayer(marker);
-                        });
-                        
-                        mapRef.current.addLayer(markerCluster);
-                        markerLayerRef.current = markerCluster;
-                        
-                        if (markerCluster.getBounds().isValid()) {
-                            mapRef.current.fitBounds(markerCluster.getBounds(), { padding: [50, 50], maxZoom: 16 });
                         }
-                    } else {
-                        mapRef.current.setView([23.8, -100.3], 7); // Vista de SLP
+                    });
+                    
+                    mapRef.current.addLayer(markerCluster);
+                    markerLayerRef.current = markerCluster;
+                    
+                    if (markerCluster.getBounds().isValid()) {
+                        mapRef.current.fitBounds(markerCluster.getBounds(), { padding: [30, 30], maxZoom: 16 });
                     }
-                } else if (data) {
-                    mapRef.current.setView([23.8, -100.3], 7); // Vista de SLP
                 }
             }, [data, resources, onMarkerClick]);
 
             return <div id="map" className="shadow-lg"></div>;
         };
 
-        // Componente de Gráfica (Chart.js)
         const ChartComponent = ({ type, data, options }) => {
             const canvasRef = React.useRef(null);
             const chartRef = React.useRef(null);
 
             React.useEffect(() => {
-                if (chartRef.current) {
-                    chartRef.current.destroy();
-                }
+                if (chartRef.current) chartRef.current.destroy();
                 const ctx = canvasRef.current.getContext('2d');
-                chartRef.current = new Chart(ctx, {
-                    type: type,
-                    data: data,
-                    options: options,
-                });
-
-                return () => {
-                    if (chartRef.current) {
-                        chartRef.current.destroy();
-                    }
-                };
+                chartRef.current = new Chart(ctx, { type, data, options });
+                return () => { if (chartRef.current) chartRef.current.destroy(); };
             }, [data, type, options]);
 
-            return (
-                <div className="chart-container">
-                    <canvas ref={canvasRef}></canvas>
-                </div>
-            );
+            return <div className="chart-container"><canvas ref={canvasRef}></canvas></div>;
         };
 
-        // Componente de la Ventana Modal
         const ReportModal = ({ data, onClose }) => {
             const [isResourcesVisible, setIsResourcesVisible] = React.useState(false);
-            const [loadingLocation, setLoadingLocation] = React.useState(false);
-            const [locationError, setLocationError] = React.useState(null);
 
-            // --- Lógica de Domicilio (con comas) ---
             const formatAddressPart = (value, suffix = '') => {
-                if (!value || value.toUpperCase() === 'NO ESPECIFICADO' || value.toUpperCase() === 'SIN DATO' || value.trim() === '') {
-                    return null;
-                }
+                if (!value || value.toUpperCase() === 'NO ESPECIFICADO' || value.toUpperCase() === 'SIN DATO' || value.trim() === '') return null;
                 const cleanedValue = value.trim();
-                if (cleanedValue.endsWith(suffix) && suffix !== '') {
-                    return cleanedValue;
-                }
-                return cleanedValue + suffix;
+                return cleanedValue.endsWith(suffix) && suffix !== '' ? cleanedValue : cleanedValue + suffix;
             };
 
             const addressParts = [
                 formatAddressPart(data['TIPO DE VIALIDAD']),
                 formatAddressPart(data['VIALIDAD']),
-                formatAddressPart(data['NUMERO EXTERIOR'], ','), // Coma aquí
+                formatAddressPart(data['NUMERO EXTERIOR'], ','),
                 formatAddressPart(data['NUMERO INTERIOR']),
                 formatAddressPart(data['TIPO DE ASENTAMIENTO']),
-                formatAddressPart(data['ASENTAMIENTO'], ','), // Coma aquí
+                formatAddressPart(data['ASENTAMIENTO'], ','),
                 data['CODIGO POSTAL'] ? `C.P. ${data['CODIGO POSTAL']}` : null
             ];
 
             const fullAddress = addressParts.filter(part => part).join(' ');
-            const addressHTML = fullAddress ? fullAddress : 'No especificado';
-
-            // --- Lógica de Institución (con clave) ---
-            const institutionKey = data['CLAVE DE LA INSTITUCION'];
-            const institutionName = data['NOMBRE DE LA INSTITUCION'];
-            const institutionDisplay = (institutionKey && institutionKey !== 'NO ESPECIFICADO' && institutionKey.trim() !== '')
-                                    ? `${institutionKey} - ${institutionName}`
-                                    : institutionName;
-
             const streetViewEmbedUrl = `https://www.google.com/maps?layer=c&cbll=${data.LATITUD},${data.LONGITUD}&cbp=12,0,0,0,0&output=svembed`;
-
-            // --- Lógica para obtener ruta de Google Maps ---
-            const handleGetDirections = () => {
-                if (!navigator.geolocation) {
-                    setLocationError("Geolocalización no es soportada por este navegador.");
-                    return;
-                }
-                setLoadingLocation(true);
-                setLocationError(null);
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        setLoadingLocation(false);
-                        const userLat = position.coords.latitude;
-                        const userLong = position.coords.longitude;
-                        const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLong}&destination=${data.LATITUD},${data.LONGITUD}`;
-                        window.open(mapsUrl, '_blank'); 
-                    },
-                    (error) => {
-                        setLoadingLocation(false);
-                        switch(error.code) {
-                            case error.PERMISSION_DENIED:
-                                setLocationError("Permiso de ubicación denegado."); break;
-                            case error.POSITION_UNAVAILABLE:
-                                setLocationError("Información de ubicación no disponible."); break;
-                            case error.TIMEOUT:
-                                setLocationError("Tiempo de espera agotado al obtener ubicación."); break;
-                            default:
-                                setLocationError("Ocurrió un error al obtener la ubicación."); break;
-                        }
-                    }
-                );
-            };
 
             return (
                 <div className="modal-backdrop" onClick={onClose}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        {/* Encabezado del Modal - Color de texto cambiado a #055A1C */}
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold text-[#055A1C]">{data['NOMBRE DE LA UNIDAD']}</h2>
                             <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
                         </div>
-                        
-                        {/* Contenido del Modal */}
                         <div className="text-sm space-y-2">
                             <p><strong>CLUES:</strong> {data['CLUES']}</p>
-                            <p><strong>Institución:</strong> {institutionDisplay || "No especificado"}</p>
+                            <p><strong>Institución:</strong> {data['NOMBRE DE LA INSTITUCION']}</p>
                             <p><strong>Tipo:</strong> {data['NOMBRE TIPO ESTABLECIMIENTO']}</p>
                             <p><strong>Municipio:</strong> {data['MUNICIPIO']}</p>
-                            <p><strong>Domicilio:</strong> {addressHTML}</p>
-                            {(data['TELEFONO'] && data['TELEFONO'].toUpperCase() !== 'NO ESPECIFICADO') && <p><strong>Teléfono:</strong> {data['TELEFONO']}</p>}
-                            {(data['CORREO ELECTRONICO'] && data['CORREO ELECTRONICO'].toUpperCase() !== 'NO ESPECIFICADO') && <p><strong>Correo:</strong> {data['CORREO ELECTRONICO']}</p>}
-
-                            {/* Reporte de Recursos (Desplegable) - Color de texto cambiado a #055A1C */}
+                            <p><strong>Domicilio:</strong> {fullAddress || 'No especificado'}</p>
                             <hr className="my-3" />
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-semibold text-[#055A1C]">Recursos de la Unidad</h3>
-                                {/* --- CAMBIO HOVER --- */}
-                                <button
-                                    onClick={() => setIsResourcesVisible(!isResourcesVisible)}
-                                    className="text-sm text-[#055A1C] hover:text-[#e6007e] font-semibold px-2 py-1 rounded"
-                                >
+                                <button onClick={() => setIsResourcesVisible(!isResourcesVisible)} className="text-sm text-[#055A1C] hover:text-[#e6007e] font-semibold transition-colors">
                                     {isResourcesVisible ? 'Ocultar' : 'Mostrar'}
                                 </button>
                             </div>
-
-                            {/* Contenido Desplegable */}
                             {isResourcesVisible && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 mt-2">
                                     <div className="space-y-1">
-                                        <p><strong>Consultorios Medicina General:</strong> {data['CONS_MG'] || "No especificado"}</p>
-                                        <p><strong>Consultorios Dentales:</strong> {data['CONS_ODONT'] || "No especificado"}</p>
-                                        <p><strong>Consultorios Especialidades:</strong> {data['CONS_ESP'] || "No especificado"}</p>
-                                        <p><strong>Servicio de Hospitalización:</strong> {data['AREA_HOSP'] || "No especificado"}</p>
-                                        <p><strong>Área de Urgencias:</strong> {data['AREA_URGENCIAS'] || "No especificado"}</p>
-                                        <p><strong>Servicio de Hemodialisis:</strong> {data['HEMOD'] || "No especificado"}</p>
-                                        <p><strong>Laboratorio Clínico:</strong> {data['LABORATORIO'] || "No especificado"}</p>
+                                        <p><strong>Cons. Med. General:</strong> {data['CONS_MG'] || "0"}</p>
+                                        <p><strong>Médicos Generales:</strong> {data['MEDICOS_GENERALES'] || "0"}</p>
                                     </div>
                                     <div className="space-y-1">
-                                        <p><strong>Total de Médicos Generales:</strong> {data['MEDICOS_GENERALES'] || "No especificado"}</p>
-                                        <p><strong>Total de Médicos Especialistas:</strong> {data['MEDICOS_ESP'] || "No especificado"}</p>
-                                        <p><strong>Total de Enfermeras:</strong> {data['ENFERMERAS'] || "No especificado"}</p>
+                                        <p><strong>Enfermeras:</strong> {data['ENFERMERAS'] || "0"}</p>
                                     </div>
                                 </div>
                             )}
-
-                            {/* Street View */}
                             <hr className="my-3" />
-                             <iframe
-                                className="mt-2 w-full h-60 rounded border-0"
-                                loading="lazy"
-                                allowFullScreen
-                                src={streetViewEmbedUrl}>
-                            </iframe>
+                            <iframe className="mt-2 w-full h-60 rounded border-0" loading="lazy" allowFullScreen src={streetViewEmbedUrl}></iframe>
                         </div>
-
-                        {/* Mensaje de Carga/Error de Ubicación */}
-                        {loadingLocation && (
-                            <p className="text-sm text-center text-gray-600 mt-4">Obteniendo tu ubicación...</p>
-                        )}
-                        {locationError && (
-                            <p className="text-sm text-center text-red-600 mt-4">{locationError}</p>
-                        )}
-                        {/* Pie del Modal - Color de botón cambiado a #055A1C */}
-                        <div className="flex justify-end items-center mt-4 space-x-2">
-                            {/* --- CAMBIO HOVER --- */}
-                            <button
-                                onClick={handleGetDirections}
-                                disabled={loadingLocation}
-                                className="px-4 py-2 bg-[#055A1C] text-white rounded-md hover:bg-[#e6007e] font-semibold disabled:bg-gray-400"
-                            >
-                                {loadingLocation ? 'Cargando...' : 'Obtener Ruta'}
-                            </button>
-                             {/* --- CAMBIO HOVER --- */}
-                            <button 
-                                onClick={onClose}
-                                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-[#e6007e] hover:text-white font-semibold"
-                            >
-                                Cerrar
-                            </button>
+                        <div className="flex justify-end items-center mt-4">
+                            <button onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-[#e6007e] hover:text-white font-semibold transition-colors">Cerrar</button>
                         </div>
                     </div>
                 </div>
             );
         };
-        
-        // --- Componente Principal de la Aplicación ---
+
         const App = () => {
             const [allData, setAllData] = React.useState([]);
             const [filteredData, setFilteredData] = React.useState([]);
-            const [resources, setResources] = React.useState(null); // Mapa de recursos
+            const [resources, setResources] = React.useState(new Map());
             const [loading, setLoading] = React.useState(true);
             const [error, setError] = React.useState(null);
-            
-            const [modalData, setModalData] = React.useState(null); // Datos para el modal
-
+            const [modalData, setModalData] = React.useState(null);
             const [suggestions, setSuggestions] = React.useState([]);
+            const [filters, setFilters] = React.useState({ search: '', institution: 'TODAS', municipality: 'TODOS' });
+            
             const searchContainerRef = React.useRef(null);
 
-            const [filters, setFilters] = React.useState({
-                search: '',
-                institution: 'TODAS',
-                municipality: 'TODOS',
-                establishmentType: 'TODOS',
-            });
-
-            // Efecto de carga de datos (ambos CSV)
             React.useEffect(() => {
-                Promise.all([
-                    d3.csv(DATA_URL),
-                    d3.csv(RESOURCES_DATA_URL)
-                ]).then(([data, resourcesData]) => {
-                    setAllData(data);
-                    setFilteredData(data);
-                    
-                    // Crear un Mapa de recursos para búsqueda rápida por CLUES
-                    const resourcesMap = new Map(resourcesData.map(item => [item.CLUES, item]));
-                    setResources(resourcesMap);
-
-                    setLoading(false);
-                }).catch(err => {
-                    console.error("Error fetching data:", err);
-                    setError("No se pudieron cargar los datos. Por favor, intente de nuevo más tarde.");
-                    setLoading(false);
-                });
+                setError(null);
+                Promise.all([d3.csv(DATA_URL), d3.csv(RESOURCES_DATA_URL)])
+                    .then(([data, resData]) => {
+                        if (data.length === 0) {
+                            setError("No se encontraron registros.");
+                        } else {
+                            setAllData(data);
+                            setFilteredData(data);
+                            setResources(new Map(resData.map(item => [item.CLUES.trim(), item])));
+                        }
+                        setLoading(false);
+                    }).catch((err) => {
+                        setError("Error cargando la base de datos.");
+                        setLoading(false);
+                    });
             }, []);
-            
-            // Efecto de filtrado
-            React.useEffect(() => {
-                let data = allData;
 
-                if (filters.search) {
-                    const lowerCaseSearch = filters.search.toLowerCase();
-                    data = data.filter(d => 
-                        d['CLUES']?.toLowerCase().includes(lowerCaseSearch) || 
-                        d['NOMBRE DE LA UNIDAD']?.toLowerCase().includes(lowerCaseSearch)
-                    );
-                }
-
-                if (filters.institution !== 'TODAS') {
-                    // El filtro usa el NOMBRE, no la clave concatenada
-                    data = data.filter(d => d['NOMBRE DE LA INSTITUCION'] === filters.institution);
-                }
-                
-                if (filters.municipality !== 'TODOS') {
-                    data = data.filter(d => d['MUNICIPIO'] === filters.municipality);
-                }
-
-                if (filters.establishmentType !== 'TODOS') {
-                    data = data.filter(d => d['NOMBRE TIPO ESTABLECIMIENTO'] === filters.establishmentType);
-                }
-                
-                setFilteredData(data);
-            }, [filters, allData]);
-
-            // Efecto para cerrar sugerencias
             React.useEffect(() => {
                 const handleClickOutside = (event) => {
                     if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
-                        setSuggestions([]);
+                        setSuggestions(prev => prev.length > 0 ? [] : prev);
                     }
                 };
                 document.addEventListener("mousedown", handleClickOutside);
-                return () => {
-                    document.removeEventListener("mousedown", handleClickOutside);
-                };
-            }, [searchContainerRef]);
+                return () => document.removeEventListener("mousedown", handleClickOutside);
+            }, []);
 
+            React.useEffect(() => {
+                let data = allData;
+                if (filters.search) {
+                    const s = filters.search.toLowerCase();
+                    data = data.filter(d => d['CLUES']?.toLowerCase().includes(s) || d['NOMBRE DE LA UNIDAD']?.toLowerCase().includes(s));
+                }
+                if (filters.institution !== 'TODAS') data = data.filter(d => d['NOMBRE DE LA INSTITUCION'] === filters.institution);
+                if (filters.municipality !== 'TODOS') data = data.filter(d => d['MUNICIPIO'] === filters.municipality);
+                setFilteredData(data);
+            }, [filters, allData]);
 
-            // Listas únicas para los filtros (Memoized)
-            // --- Lógica de Instituciones (con clave) ---
             const uniqueInstitutions = React.useMemo(() => {
-                let data = allData;
-                if (filters.municipality !== 'TODOS') {
-                    data = data.filter(d => d['MUNICIPIO'] === filters.municipality);
-                }
-                if (filters.establishmentType !== 'TODOS') {
-                    data = data.filter(d => d['NOMBRE TIPO ESTABLECIMIENTO'] === filters.establishmentType);
-                }
-                
-                // Usar un Map para obtener instituciones únicas (Nombre -> Clave)
-                const institutionsMap = new Map();
-                data.forEach(d => {
-                    const name = d['NOMBRE DE LA INSTITUCION'];
-                    const key = d['CLAVE DE LA INSTITUCION'];
-                    if (name && !institutionsMap.has(name)) { // Usar el nombre como clave única
-                        institutionsMap.set(name, key); // Almacenar { "SECRETARIA DE SALUD" => "SSA" }
-                    }
-                });
+                const map = new Map();
+                allData.forEach(d => { if (!map.has(d['NOMBRE DE LA INSTITUCION'])) map.set(d['NOMBRE DE LA INSTITUCION'], d['CLAVE DE LA INSTITUCION']); });
+                return [{ name: 'TODAS', key: 'TODAS' }, ...Array.from(map.entries()).map(([n, k]) => ({ name: n, key: k !== 'NO ESPECIFICADO' ? `${k} - ${n}` : n })).sort((a,b) => a.key.localeCompare(b.key))];
+            }, [allData]);
 
-                // Convertir el Map a un array de objetos para el dropdown
-                const sortedInstitutions = Array.from(institutionsMap.entries()).map(([name, key]) => {
-                    const combinedKey = (key && key !== 'NO ESPECIFICADO' && key.trim() !== '') 
-                                            ? `${key} - ${name}` 
-                                            : name;
-                    return { name: name, key: combinedKey }; // name es el valor, key es la etiqueta
-                }).sort((a, b) => a.key.localeCompare(b.key)); // Ordenar por la etiqueta visible
+            const uniqueMunicipalities = React.useMemo(() => ['TODOS', ...Array.from(new Set(allData.map(d => d['MUNICIPIO']))).sort()], [allData]);
 
-                // Añadir "TODAS" al inicio
-                return [{ name: 'TODAS', key: 'TODAS' }, ...sortedInstitutions];
-            }, [allData, filters.municipality, filters.establishmentType]);
+            const stats = React.useMemo(() => {
+                return {
+                    municipios: new Set(filteredData.map(d => d['MUNICIPIO'])).size,
+                    instituciones: new Set(filteredData.map(d => d['NOMBRE DE LA INSTITUCION'])).size
+                };
+            }, [filteredData]);
 
-            const uniqueMunicipalities = React.useMemo(() => {
-                let data = allData;
-                if (filters.institution !== 'TODAS') {
-                    data = data.filter(d => d['NOMBRE DE LA INSTITUCION'] === filters.institution);
+            const chartOptions = React.useMemo(() => ({
+                doughnut: { 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } 
+                },
+                bar: { 
+                    indexAxis: 'y', 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } }, 
+                    scales: { x: { display: false }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } } 
                 }
-                if (filters.establishmentType !== 'TODOS') {
-                    data = data.filter(d => d['NOMBRE TIPO ESTABLECIMIENTO'] === filters.establishmentType);
-                }
-                const municipalities = new Set(data.map(d => d['MUNICIPIO']));
-                return ['TODOS', ...Array.from(municipalities).sort()];
-            }, [allData, filters.institution, filters.establishmentType]);
-
-            const uniqueEstablishmentTypes = React.useMemo(() => {
-                let data = allData;
-                if (filters.institution !== 'TODAS') {
-                    data = data.filter(d => d['NOMBRE DE LA INSTITUCION'] === filters.institution);
-                }
-                if (filters.municipality !== 'TODOS') {
-                    data = data.filter(d => d['MUNICIPIO'] === filters.municipality);
-                }
-                const types = new Set(data.map(d => d['NOMBRE TIPO ESTABLECIMIENTO']));
-                return ['TODOS', ...Array.from(types).sort()];
-            }, [allData, filters.institution, filters.municipality]);
-
-
-            // Manejadores de eventos
-            const handleFilterChange = (e) => {
-                const { name, value } = e.target;
-                setFilters(prev => ({ ...prev, [name]: value }));
-            };
+            }), []);
 
             const handleSearchChange = (e) => {
-                const value = e.target.value;
-                setFilters(prev => ({ ...prev, search: value }));
-
-                if (value.length > 1) {
-                    const lowerCaseValue = value.toLowerCase();
-                    const matchingUnits = allData
-                        .filter(d => 
-                            d['NOMBRE DE LA UNIDAD']?.toLowerCase().includes(lowerCaseValue) ||
-                            d['CLUES']?.toLowerCase().includes(lowerCaseValue)
-                        )
+                const v = e.target.value;
+                setFilters({ ...filters, search: v });
+                if (v.length > 2) {
+                    const s = v.toLowerCase();
+                    const matches = allData
+                        .filter(d => d['NOMBRE DE LA UNIDAD']?.toLowerCase().includes(s) || d['CLUES']?.toLowerCase().includes(s))
                         .map(d => d['NOMBRE DE LA UNIDAD'])
-                        .filter((value, index, self) => self.indexOf(value) === index);
-
-                    setSuggestions(matchingUnits.slice(0, 7));
+                        .filter((val, idx, self) => self.indexOf(val) === idx);
+                    setSuggestions(matches.slice(0, 7));
                 } else {
                     setSuggestions([]);
                 }
             };
 
-            const handleSuggestionClick = (suggestion) => {
-                setFilters(prev => ({ ...prev, search: suggestion }));
-                setSuggestions([]);
-            };
-
-            const handleResetFilters = () => {
-                setFilters({
-                    search: '',
-                    institution: 'TODAS',
-                    municipality: 'TODOS',
-                    establishmentType: 'TODOS',
-                });
-            };
-
-            // Función para descargar CSV
             const downloadCSV = () => {
-                if (filteredData.length === 0) {
-                    console.warn("No hay datos filtrados para descargar.");
-                    return;
-                }
-                
-                // Usar las cabeceras del primer objeto de datos (si existen)
+                if (filteredData.length === 0) return;
                 const baseHeaders = Object.keys(allData[0] || {});
-                // Añadir cabeceras del segundo archivo (recursos) si no están ya
-                const resourceHeaders = resources.size > 0 ? Object.keys(resources.values().next().value || {}) : [];
-                const allHeaders = [...new Set([...baseHeaders, ...resourceHeaders])];
-                
-                let csvContent = "data:text/csv;charset=utf-8,";
-                
-                // Escribir cabeceras
-                csvContent += allHeaders.map(h => `"${h}"`).join(",") + "\n";
-
-                // Escribir filas (combinando datos)
-                filteredData.forEach(baseRow => {
-                    const resourceRow = resources.get(baseRow.CLUES) || {};
-                    const combinedRow = { ...baseRow, ...resourceRow };
-                    
-                    const values = allHeaders.map(header => {
-                        const cell = combinedRow[header] || "";
-                        // Escapar comillas dobles reemplándolas por dos comillas dobles
-                        const escapedCell = cell.toString().replace(/"/g, '""');
-                        // Envolver todas las celdas en comillas dobles
-                        return `"${escapedCell}"`;
-                    });
-                    csvContent += values.join(",") + "\n";
+                const resHeaders = Object.keys(resources.values().next().value || {}).filter(h => h !== 'CLUES');
+                const allHeaders = [...baseHeaders, ...resHeaders];
+                let csv = "\uFEFF" + allHeaders.map(h => `"${h}"`).join(",") + "\r\n";
+                filteredData.forEach(row => {
+                    const res = resources.get(row.CLUES.trim()) || {};
+                    const combined = { ...row, ...res };
+                    csv += allHeaders.map(h => `"${(combined[h] || "").toString().replace(/"/g, '""')}"`).join(",") + "\r\n";
                 });
-
-                const encodedUri = encodeURI(csvContent);
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", "clues_reporte_completo.csv");
-                document.body.appendChild(link);
+                link.href = URL.createObjectURL(blob);
+                link.download = "catalogo_clues_slp.csv";
                 link.click();
-                document.body.removeChild(link);
             };
 
-            // --- INICIO: Datos para las gráficas (con color de hover) ---
-            const institutionData = React.useMemo(() => {
-                const counts = filteredData.reduce((acc, item) => {
-                    // Usar la clave concatenada para la gráfica
-                    const key = item['CLAVE DE LA INSTITUCION'];
-                    const name = item['NOMBRE DE LA INSTITUCION'];
-                    const combinedKey = (key && key !== 'NO ESPECIFICADO' && key.trim() !== '') ? `${key} - ${name}` : (name || "No especificado");
-                    
-                    acc[combinedKey] = (acc[combinedKey] || 0) + 1;
+            const institutionChartData = React.useMemo(() => {
+                const counts = filteredData.reduce((acc, d) => {
+                    const key = d['CLAVE DE LA INSTITUCION'] !== 'NO ESPECIFICADO' ? `${d['CLAVE DE LA INSTITUCION']} - ${d['NOMBRE DE LA INSTITUCION']}` : d['NOMBRE DE LA INSTITUCION'];
+                    acc[key] = (acc[key] || 0) + 1;
                     return acc;
                 }, {});
-                const sorted = Object.entries(counts).sort(([, a], [, b]) => b - a);
+                const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
                 return {
                     labels: sorted.map(d => d[0]),
-                    datasets: [{
-                        label: 'Unidades',
-                        data: sorted.map(d => d[1]),
-                        backgroundColor: [
-                            '#055A1C', 
-                            'rgba(5,90,28,0.85)', 
-                            'rgba(5,90,28,0.7)', 
-                            'rgba(5,90,28,0.55)', 
-                            'rgba(5,90,28,0.4)',
-                            'rgba(5,90,28,0.3)',
-                            'rgba(5,90,28,0.2)'
-                        ],
-                        hoverOffset: 4,
-                        hoverBackgroundColor: '#e6007e' // Color de hover
-                    }]
+                    datasets: [{ label: 'Unidades', data: sorted.map(d => d[1]), backgroundColor: ['#055A1C', '#055A1CBB', '#055A1C99', '#055A1C77'], hoverBackgroundColor: '#e6007e' }]
                 };
             }, [filteredData]);
 
             const topMunicipalitiesData = React.useMemo(() => {
                 const counts = filteredData.reduce((acc, item) => {
-                    acc[item['MUNICIPIO'] || "No especificado"] = (acc[item['MUNICIPIO'] || "No especificado"] || 0) + 1;
+                    const mun = item['MUNICIPIO'] || "No especificado";
+                    acc[mun] = (acc[mun] || 0) + 1;
                     return acc;
                 }, {});
                 const sorted = Object.entries(counts).sort(([, a], [, b]) => b - a).slice(0, 10);
                 return {
                     labels: sorted.map(d => d[0]),
-                    datasets: [{
-                        label: 'No. de Unidades',
-                        data: sorted.map(d => d[1]),
-                        backgroundColor: '#055A1C',
-                        borderColor: '#055A1C',
-                        borderWidth: 1,
-                        hoverBackgroundColor: '#e6007e', // Color de hover
-                        hoverBorderColor: '#e6007e'      // Color de hover
-                    }]
+                    datasets: [{ label: 'Unidades', data: sorted.map(d => d[1]), backgroundColor: '#055A1C', hoverBackgroundColor: '#e6007e', borderRadius: 4 }]
                 };
             }, [filteredData]);
-            
-            const establishmentTypeData = React.useMemo(() => {
-                const counts = filteredData.reduce((acc, item) => {
-                    const typeName = item['NOMBRE TIPO ESTABLECIMIENTO'] || "No especificado";
-                    acc[typeName] = (acc[typeName] || 0) + 1;
-                    return acc;
-                }, {});
-                const sorted = Object.entries(counts).sort(([, a], [, b]) => b - a);
-                return {
-                    labels: sorted.map(d => d[0]),
-                    datasets: [{
-                        label: 'No. de Unidades',
-                        data: sorted.map(d => d[1]),
-                        backgroundColor: 'rgba(5,90,28,0.7)',
-                        borderColor: '#055A1C',
-                        borderWidth: 1,
-                        hoverBackgroundColor: '#e6007e', // Color de hover
-                        hoverBorderColor: '#e6007e'      // Color de hover
-                    }]
-                };
-            }, [filteredData]);
-            // --- FIN: Datos para las gráficas (con color de hover) ---
 
-            // Renderizado condicional (Cargando, Error, Contenido)
-            if (loading) {
-                return (
-                    <div className="flex justify-center items-center h-screen">
-                        <div className="text-center">
-                             {/* Color de spinner cambiado a #055A1A */}
-                            <svg className="animate-spin h-10 w-10 text-[#055A1A] mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <p className="mt-2 text-lg font-semibold text-gray-700">Cargando datos...</p>
-                        </div>
-                    </div>
-                );
-            }
+            if (loading) return <div className="flex justify-center items-center h-screen bg-gray-50"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#055A1C]"></div></div>;
+            if (error) return <div className="flex justify-center items-center h-screen bg-gray-50 p-6 text-center text-red-600 font-bold">{error}</div>;
 
-            if (error) {
-                return <div className="text-center text-red-500 p-8">{error}</div>;
-            }
-
-            // Contenido principal
             return (
-                <div className="min-h-screen">
-                    {/* Encabezado - Color de texto cambiado a #055A1C */}
-                    <header className="bg-white shadow-md sticky top-0 z-10">
-                        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+                <div className="flex flex-col min-h-screen">
+                    <header className="bg-white shadow-md sticky top-0 z-10 p-4">
+                        <div className="container mx-auto flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                            {/* Restaurado: Logo y Título alineados al inicio */}
                             <div className="flex items-center">
-                                <img 
-                                    src="https://d3dac9gdq8t83x.cloudfront.net/media/static/images/hor-verde.png" 
-                                    alt="Logo Salud Digital" 
-                                    className="h-12 w-auto mr-3"
-                                    onError={(e) => e.target.style.display='none'}
-                                />
-                                <h1 className="text-2xl font-bold text-[#055A1C]">Catálogo CLUES</h1>
+                                <img src="https://d3dac9gdq8t83x.cloudfront.net/media/static/images/hor-verde.png" alt="Logo" className="h-10 mr-4" />
+                                <h1 className="text-xl md:text-2xl font-bold text-[#055A1C]">Catálogo CLUES</h1>
+                            </div>
+                            
+                            {/* Información Institucional alineada a la derecha */}
+                            <div className="text-left md:text-right border-t md:border-t-0 md:border-l border-gray-100 pt-2 md:pt-0 md:pl-4">
+                                <p className="text-[10px] md:text-xs font-bold text-gray-700 uppercase leading-tight tracking-tight">DIRECCIÓN DE PLANEACIÓN, EVALUACIÓN Y PROYECTOS ESPECIALES</p>
+                                <p className="text-[9px] md:text-[10px] font-medium text-gray-500 uppercase mt-0.5 tracking-tight">SUBDIRECCIÓN DE INFORMÁTICA Y ESTADISTICAS EN SALUD</p>
                             </div>
                         </div>
                     </header>
 
-                    {/* Contenido Principal */}
-                    <main className="container mx-auto p-4 lg:p-6">
-                        
-                        {/* Disclaimer */}
-                        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 text-sm text-yellow-800 shadow-sm rounded-r-lg">
-                            <p>
+                    <main className="container mx-auto p-4 lg:p-6 flex-grow">
+                        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 text-[11px] md:text-sm text-yellow-800 shadow-sm rounded-r-lg">
+                            <p className="text-justify">
                                 La transferencia al Organismo Público Descentralizado IMSS-BIENESTAR aplica exclusivamente a las Unidades Médicas provenientes de los Servicios de Salud de San Luis Potosí, en el marco del Convenio de Coordinación publicado en el Diario Oficial de la Federación el 20 de diciembre del 2023 y su modificatorio del 7 de marzo del 2024. El resto de Unidades Médicas mostradas pertenecen a sus respectivas instituciones
                             </p>
                         </div>
 
-                        {/* Filtros - Color de focus y hover cambiado a #055A1C */}
-                        <div className="bg-white p-4 rounded-lg shadow-md mb-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-end">
-                                <div className="relative sm:col-span-2 md:col-span-1">
-                                    <label htmlFor="search-input" className="block text-sm font-medium text-gray-700 mb-1">Búsqueda</label>
-                                    <div ref={searchContainerRef}>
-                                        <input
-                                            id="search-input"
-                                            type="text"
-                                            name="search"
-                                            placeholder="Buscar por CLUES o Nombre..."
-                                            value={filters.search}
-                                            onChange={handleSearchChange}
-                                            autoComplete="off"
-                                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#055A1C] focus:outline-none"
-                                        />
-                                        {suggestions.length > 0 && (
-                                            <ul className="absolute z-20 w-full bg-white border border-gray-200 rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg">
-                                                {suggestions.map((suggestion, index) => (
-                                                    // --- CAMBIO HOVER ---
-                                                    <li
-                                                        key={index}
-                                                        className="p-2 text-sm text-gray-700 hover:bg-[#e6007e]/10 cursor-pointer truncate"
-                                                        onClick={() => handleSuggestionClick(suggestion)}
-                                                    >
-                                                        {suggestion}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                    </div>
-                                </div>
-                                <div>
-                                    <label htmlFor="institution-select" className="block text-sm font-medium text-gray-700 mb-1">Institución</label>
-                                    <select 
-                                        id="institution-select" 
-                                        name="institution" 
-                                        value={filters.institution} 
-                                        onChange={handleFilterChange} 
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#055A1C] focus:outline-none"
-                                    >
-                                        {uniqueInstitutions.map(inst => 
-                                            <option key={inst.key} value={inst.name}>{inst.key}</option>
-                                        )}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label htmlFor="municipality-select" className="block text-sm font-medium text-gray-700 mb-1">Municipio</label>
-                                    <select id="municipality-select" name="municipality" value={filters.municipality} onChange={handleFilterChange} className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#055A1C] focus:outline-none">
-                                        {uniqueMunicipalities.map(mun => <option key={mun} value={mun}>{mun}</option>)}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label htmlFor="establishment-select" className="block text-sm font-medium text-gray-700 mb-1">Tipo de Unidad</label>
-                                    <select id="establishment-select" name="establishmentType" value={filters.establishmentType} onChange={handleFilterChange} className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#055A1C] focus:outline-none">
-                                        {uniqueEstablishmentTypes.map(type => <option key={type} value={type}>{type}</option>)}
-                                    </select>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {/* --- CAMBIO HOVER --- */}
-                                     <button
-                                        onClick={handleResetFilters}
-                                        className="w-full p-2 bg-gray-200 text-gray-700 rounded-md hover:bg-[#e6007e] hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-400 font-semibold"
-                                    >
-                                        Reestablecer
-                                    </button>
-                                    {/* --- CAMBIO HOVER --- */}
-                                    <button
-                                        onClick={downloadCSV}
-                                        className="w-full p-2 bg-[#055A1C] text-white rounded-md hover:bg-[#e6007e] focus:outline-none focus:ring-2 focus:ring-[#055A1C] font-semibold"
-                                    >
-                                        Descarga CSV
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* --- INICIO: Estadísticas con Iconos Nuevos (Calculadora) --- */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                            <StatCard 
-                                title="Total de Unidades" 
-                                value={(allData.length || 0).toLocaleString()} 
-                                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 3h.008v.008H8.25v-.008Zm0 3h.008v.008H8.25v-.008Zm3-6h.008v.008H11.25v-.008Zm0 3h.008v.008H11.25v-.008Zm0 3h.008v.008H11.25v-.008Zm3-6h.008v.008H14.25v-.008Zm0 3h.008v.008H14.25v-.008Zm0 3h.008v.008H14.25v-.008ZM6 18V9.75a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 .75.75V18m-12 0h12M6 18H4.5a.75.75 0 0 1-.75-.75V6.75A.75.75 0 0 1 4.5 6h15a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-.75.75H18" /></svg>} 
-                            />
-                            <StatCard 
-                                title="Unidades Filtradas" 
-                                value={(filteredData.length || 0).toLocaleString()} 
-                                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.591a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" /></svg>} 
-                            />
-                            <StatCard 
-                                title="Instituciones" 
-                                value={uniqueInstitutions.length > 1 ? (uniqueInstitutions.length -1) : 0} 
-                                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" /></svg>} 
-                            />
-                            <StatCard 
-                                title="Municipios" 
-                                value={uniqueMunicipalities.length > 1 ? (uniqueMunicipalities.length - 1) : 0} 
-                                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path strokeLinecap="round" strokeLinejoin="round"d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>} 
-                            />
-                        </div>
-                        {/* --- FIN: Estadísticas con Iconos Nuevos --- */}
-
-                        {/* Cuadrícula Principal: Mapa y Gráficas */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Mapa */}
-                            <div className="lg:col-span-2 bg-white p-4 rounded-lg shadow-md">
-                                <h2 className="text-xl font-semibold text-gray-700 mb-4">Mapa de Unidades Médicas</h2>
-                                <MapView 
-                                    data={filteredData} 
-                                    resources={resources} 
-                                    onMarkerClick={setModalData} /* Pasa la función para abrir el modal */
+                        <div className="bg-white p-4 rounded-lg shadow-md mb-6 grid grid-cols-1 md:grid-cols-5 gap-4">
+                            <div className="relative" ref={searchContainerRef}>
+                                <input 
+                                    type="text" 
+                                    placeholder="Buscar CLUES o Nombre" 
+                                    value={filters.search} 
+                                    onChange={handleSearchChange}
+                                    className="w-full p-2 border rounded focus:ring-2 focus:ring-[#055A1C] focus:outline-none" 
                                 />
+                                {suggestions.length > 0 && (
+                                    <ul className="absolute z-20 w-full bg-white border border-gray-200 rounded-md mt-1 max-h-60 overflow-y-auto shadow-xl">
+                                        {suggestions.map((s, i) => <li key={i} onClick={() => { setFilters({ ...filters, search: s }); setSuggestions([]); }} className="p-2 text-sm hover:bg-[#e6007e] hover:text-white cursor-pointer truncate transition-colors">{s}</li>)}
+                                    </ul>
+                                )}
                             </div>
-                            
-                            {/* Columna de Gráficas */}
+                            <select value={filters.institution} onChange={e => setFilters({...filters, institution: e.target.value})} className="p-2 border rounded">{uniqueInstitutions.map(i => <option key={i.key} value={i.name}>{i.key}</option>)}</select>
+                            <select value={filters.municipality} onChange={e => setFilters({...filters, municipality: e.target.value})} className="p-2 border rounded">{uniqueMunicipalities.map(m => <option key={m} value={m}>{m}</option>)}</select>
+                            <button onClick={() => setFilters({search: '', institution: 'TODAS', municipality: 'TODOS'})} className="bg-gray-200 p-2 rounded hover:bg-[#e6007e] hover:text-white transition-colors">Limpiar</button>
+                            <button onClick={downloadCSV} className="bg-[#055A1C] text-white p-2 rounded hover:bg-[#e6007e] transition-colors flex items-center justify-center gap-2 font-medium">Descargar Catálogo</button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                            <StatCard title="Total Unidades" value={allData.length} icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>} />
+                            <StatCard title="Unidades Filtradas" value={filteredData.length} icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>} />
+                            <StatCard title="Municipios" value={stats.municipios} icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>} />
+                            <StatCard title="Instituciones" value={stats.instituciones} icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" /></svg>} />
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="lg:col-span-2 bg-white p-4 rounded-lg shadow-md"><MapView data={filteredData} resources={resources} onMarkerClick={setModalData} /></div>
                             <div className="flex flex-col gap-6">
                                 <div className="bg-white p-4 rounded-lg shadow-md">
-                                    <h2 className="text-xl font-semibold text-gray-700 mb-2">Distribución por Institución</h2>
-                                    <ChartComponent type="doughnut" data={institutionData} options={{ maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } } } }} />
+                                    <h2 className="font-bold mb-4 text-xs uppercase text-gray-500">Instituciones</h2>
+                                    <ChartComponent type="doughnut" data={institutionChartData} options={chartOptions.doughnut} />
                                 </div>
                                 <div className="bg-white p-4 rounded-lg shadow-md">
-                                    <h2 className="text-xl font-semibold text-gray-700 mb-2">Top 10 Municipios</h2>
-                                    <ChartComponent type="bar" data={topMunicipalitiesData} options={{ indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { font: { size: 9 } } } } }} />
-                                </div>
-                                <div className="bg-white p-4 rounded-lg shadow-md">
-                                    <h2 className="text-xl font-semibold text-gray-700 mb-2">Distribución por Tipo de Unidad</h2>
-                                    <ChartComponent type="bar" data={establishmentTypeData} options={{ maintainAspectRatio: false, plugins: { legend: { display: false } } }} />
+                                    <h2 className="font-bold mb-4 text-xs uppercase text-gray-500">Top 10 Municipios</h2>
+                                    <ChartComponent type="bar" data={topMunicipalitiesData} options={chartOptions.bar} />
                                 </div>
                             </div>
                         </div>
                     </main>
 
-                    {/* Pie de Página */}
-                    <footer className="text-center text-sm text-gray-500 py-4 mt-4 border-t border-gray-200">
-                        Catálogo CLUES - Versión de datos: Cierre de Octubre 2025
-                    </footer>
-                    {/* Fin del Pie de Página */}
+                    <footer className="bg-[#f8fafc] border-t border-gray-200 py-12 mt-12">
+                        <div className="container mx-auto px-4">
+                            <p className="text-center text-[10px] md:text-xs text-gray-400 mb-10 uppercase tracking-widest font-semibold tracking-tighter">Versión de datos: Octubre 2025</p>
+                            
+                            {/* Título de la Sección de Contacto - Centrado con líneas laterales */}
+                            <div className="max-w-4xl mx-auto mb-8">
+                                <div className="flex items-center space-x-4">
+                                    <div className="flex-grow border-t border-gray-200"></div>
+                                    <h2 className="text-sm md:text-base font-bold text-gray-700 uppercase tracking-wide px-4 text-center">Responsables de la Plataforma y Soporte Técnico</h2>
+                                    <div className="flex-grow border-t border-gray-200"></div>
+                                </div>
+                            </div>
 
-                    {/* Renderizado condicional del Modal */}
-                    {modalData && (
-                        <ReportModal 
-                            data={modalData} 
-                            onClose={() => setModalData(null)} /* Pasa la función para cerrar el modal */
-                        />
-                    )}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                                <ContactCard 
+                                    name="Ing. Dorian Escamilla Sauceda"
+                                    position="Subdirector de Informática y Estadísticas en Salud"
+                                    email="sub.informatica@slpsalud.gob.mx"
+                                    initials="DE"
+                                />
+                                <ContactCard 
+                                    name="Fernando Montoya Rivera"
+                                    position="Desarrollador de la Herramienta y Enlace de Información CLUES"
+                                    email="clues.estadistica@slpsalud.gob.bx"
+                                    initials="FM"
+                                />
+                            </div>
+                        </div>
+                    </footer>
+                    {modalData && <ReportModal data={modalData} onClose={() => setModalData(null)} />}
                 </div>
             );
         };
-
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-
     </script>
-
 </body>
 </html>
