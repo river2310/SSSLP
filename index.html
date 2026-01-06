@@ -120,7 +120,7 @@
                 </div>
                 <div className="flex-grow text-left min-w-0">
                     <h3 className="text-sm md:text-base font-bold text-gray-800 truncate">{name}</h3>
-                    <p className="text-[11px] md:text-xs text-gray-500 font-medium leading-tight mb-1">{position}</p>
+                    <p className="text-[10px] md:text-[11px] text-gray-500 font-medium leading-tight mb-1">{position}</p>
                     <div className="flex items-center text-[#055A1C] hover:text-[#e6007e] transition-colors">
                         <svg className="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -564,10 +564,26 @@
                     <footer className="bg-[#f8fafc] border-t border-gray-200 py-12 mt-12">
                         <div className="container mx-auto px-4 text-center">
                             <p className="text-[10px] md:text-xs text-gray-400 mb-10 uppercase tracking-widest font-semibold tracking-tighter">Versión de datos: Octubre 2025</p>
-                            <div className="max-w-4xl mx-auto mb-8"><div className="flex items-center space-x-4"><div className="flex-grow border-t border-gray-200"></div><h2 className="text-sm md:text-base font-bold text-gray-700 uppercase tracking-wide px-4 text-center">Responsables de la Plataforma y Soporte Técnico</h2><div className="flex-grow border-t border-gray-200"></div></div></div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                                <ContactCard name="Ing. Dorian Escamilla Sauceda" position="Subdirector de Informática y Estadísticas en Salud" email="sub.informatica@slpsalud.gob.mx" initials="DE"/>
-                                <ContactCard name="Fernando Montoya Rivera" position="Desarrollador de la Herramienta y Enlace de Información CLUES" email="clues.estadistica@slpsalud.gob.bx" initials="FM"/>
+                            <div className="max-w-6xl mx-auto mb-8"><div className="flex items-center space-x-4"><div className="flex-grow border-t border-gray-200"></div><h2 className="text-sm md:text-base font-bold text-gray-700 uppercase tracking-wide px-4 text-center">Responsables de la Plataforma y Soporte Técnico</h2><div className="flex-grow border-t border-gray-200"></div></div></div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                                <ContactCard 
+                                    name="Lic. Omar Granados Piña" 
+                                    position="Director de Planeación, Evaluación y Proyectos Especiales" 
+                                    email="dir.planeacion@slpsalud.gob.mx" 
+                                    initials="OG"
+                                />
+                                <ContactCard 
+                                    name="Ing. Dorian Escamilla Sauceda" 
+                                    position="Subdirector de Informática y Estadísticas en Salud" 
+                                    email="sub.informatica@slpsalud.gob.mx" 
+                                    initials="DE"
+                                />
+                                <ContactCard 
+                                    name="Fernando Montoya Rivera" 
+                                    position="Desarrollador de la Herramienta y Enlace de Información CLUES" 
+                                    email="clues.estadistica@slpsalud.gob.bx" 
+                                    initials="FM"
+                                />
                             </div>
                         </div>
                     </footer>
